@@ -1,0 +1,40 @@
+{
+  "name": "playwright-template",
+  "version": "1.0.0",
+  "description": "Playwright test automation template with Allure reporting, SauceLabs execution and structured logging",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "pw:test": "playwright test",
+    "pw:test:smoke": "cross-env SMOKE=true playwright test",
+    "pw:test:headed": "playwright test --headed",
+    "pw:test:smoke:headed": "cross-env SMOKE=true playwright test --headed",
+    "pw:test:ui": "playwright test --ui",
+    "pw:list": "playwright test --list",
+    "lint": "eslint \"playwright/**/*.ts\"",
+    "lint:fix": "eslint \"playwright/**/*.ts\" --fix",
+    "format": "prettier --write \"playwright/**/*.ts\"",
+    "sauce:update-config": "ts-node run-sauce.ts",
+    "sauce:run": "ts-node run-sauce.ts && saucectl run --config .sauce/config.yml",
+    "sauce:run:smoke": "ts-node run-sauce.ts && saucectl run --config .sauce/config.yml --env SMOKE=true",
+    "report:open": "allure open allure-report"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "allure-commandline": "^2.34.0",
+    "allure-playwright": "^3.10.2",
+    "cross-env": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.7.0",
+    "prettier": "^3.8.1",
+    "saucectl": "^0.202.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.45.0"
+  }
+}

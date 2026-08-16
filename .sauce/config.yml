@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: playwright
+sauce:
+  region: us-west-1
+  concurrency: 1
+  metadata:
+    tags:
+      - playwright
+      - template
+artifacts:
+  download:
+    directory: C:\LogFolder\playwright-template_2026-01-01_00-00-00
+    match:
+      - "*"
+      - allure-results.zip
+      - allure-report.zip
+    when: always
+  retain:
+    Test-Results-Folder: allure-results.zip
+playwright:
+  version: package.json
+  configFile: playwright.sauce.config.ts
+suites:
+  - name: example-smoke
+    platformName: Windows 11
+    screenResolution: 1920x1080
+    testMatch: "playwright/e2e/example.spec.ts"
+    env:
+      SMOKE: "true"
+    options:
+      project: chromium
+  - name: example-regression
+    platformName: Windows 11
+    screenResolution: 1920x1080
+    testMatch: "playwright/e2e/example.spec.ts"
+    options:
+      project: chromium
+npm:
+  strictSSL: false
+  dependencies:
+    - "allure-playwright"
+    - "allure-commandline"

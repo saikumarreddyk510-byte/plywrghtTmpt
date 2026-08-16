@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Auth storageState files — never commit session tokens
+playwright/.auth/*.json
+
+# Allure results and reports (generated per run)
+allure-results/
+allure-results-*/
+allure-report/
+test-results/
+
+# Log output
+*.log
+logs/
+LogFolder/
+
+# Environment / secrets
+.env
+
+# Build artifacts
+dist/
