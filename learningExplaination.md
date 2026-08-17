@@ -2211,3 +2211,356 @@ Key insight:
 ---
 
 *Ee section lo Why Multi-Agent Systems — problems, benefits, patterns, real examples, comparison cover chesam.*
+
+
+---
+---
+
+# <span style="color:#0B7285;"><strong>Claude Code Skills System — Complete Explanation</strong></span>
+
+![Claude Code Skills System](./images/Claude_Code_Skills_System.png)
+
+---
+
+## <span style="color:#364FC7;"><strong>1) Claude Code Skills System Ante Enti?</strong></span>
+
+> "In this section, we'll learn how to build four specialized Skilled agents using Claude Code's Skill System that help QA engineers plan, design, and review tests for a real-world application."
+
+**Simple ga cheppalante:**
+
+Claude Code lo oka **Skills System** undi — idi specialized agents build cheyyataniki use avutundi. Prathi skill oka **specific role** play chesthundi — senior tester laaga, test architect laaga, QA reviewer laaga.
+
+**Real world analogy:**
+> Oka QA team lo different roles untay:
+> - Senior Functional Tester — scenarios create chesthadu
+> - Test Architect — test pyramid plan chesthadu
+> - Automation Engineer — tests write chesthadu
+> - Senior QA Reviewer — tests review chesthadu
+>
+> Claude Code Skills System idi AI tho replicate chesthundi!
+
+---
+
+## <span style="color:#5F3DC4;"><strong>2) 4 Specialized Agents — Skills</strong></span>
+
+### `/create-scenarios` — Senior Functional Tester
+
+```
+Role: Senior Functional Tester laaga behave chesthundi
+Job:  Test scenarios generate chesthundi
+
+Input:  Application feature/requirement
+Output: Comprehensive test scenarios list
+
+Example:
+  Input:  "Login page tho scenarios create cheyyi"
+  Output:
+    - Valid credentials tho login
+    - Invalid password tho error message
+    - Empty fields tho validation
+    - Forgot password flow
+    - Remember me functionality
+    - Account lockout after 5 failed attempts
+    ...
+```
+
+---
+
+### `/test-strategy` — Test Architect
+
+```
+Role: Test Architect laaga behave chesthundi
+Job:  Prathi test ni correct pyramid layer ki assign chesthundi
+
+Testing Pyramid:
+         /\
+        /E2E\          ← Few (slow, expensive)
+       /──────\
+      /Integr. \       ← Some
+     /────────── \
+    /  Unit Tests  \   ← Many (fast, cheap)
+   /────────────────\
+
+Input:  Test scenarios list
+Output: Prathi test ki layer assignment + priority
+
+Example:
+  "Login with valid credentials" → E2E test
+  "Password hashing function"    → Unit test
+  "Auth API response"            → Integration test
+```
+
+---
+
+### `/generate-tests` — Automation Engineer
+
+```
+Role: Senior Playwright Automation Engineer
+Job:  
+  1. Playwright tests write chesthundi
+  2. Real browser lo run chesthundi
+  3. Failures unte self-fix chesthundi (auto-retry!)
+
+Input:  Test scenarios + strategy
+Output: Working .spec.ts files
+
+Special feature — Self-fixing:
+  Test fail aite:
+    → Error analyze chesthundi
+    → Selector or logic fix chesthundi
+    → Re-run chesthundi
+    → Pass avvaka oka limit daka retry chesthundi
+
+  "Write tests, run them, fix failures" — fully automated ✅
+```
+
+---
+
+### `/review-tests` — Senior QA Reviewer
+
+```
+Role: Senior QA Reviewer
+Job:  Generated tests review chesthundi
+
+Reviews chesthundi:
+  → Test coverage complete undha?
+  → Edge cases miss avvaledha?
+  → Best practices follow chesara?
+  → Selectors reliable undha? (no flaky tests)
+  → Assertions meaningful undha?
+  → Code readable undha?
+
+Output: Review report + improvement suggestions
+```
+
+---
+
+## <span style="color:#2B8A3E;"><strong>3) How It Works — Pipeline Flow</strong></span>
+
+```
+Developer/QA:
+  "Login feature tests create cheyyi"
+           ↓
+/create-scenarios agent:
+  → Scenarios list generate chesthundi
+  → scenarios.md file lo save chesthundi (HANDOFF FILE)
+           ↓
+/test-strategy agent:
+  → scenarios.md read chesthundi
+  → Prathi scenario ki pyramid layer assign
+  → strategy.md file lo save chesthundi (HANDOFF FILE)
+           ↓
+/generate-tests agent:
+  → strategy.md read chesthundi
+  → Playwright .spec.ts files write chesthundi
+  → Browser lo run chesthundi
+  → Failures fix chesthundi
+  → tests/ folder lo save chesthundi (HANDOFF FILE)
+           ↓
+/review-tests agent:
+  → tests/ read chesthundi
+  → Review report generate chesthundi
+  → Final approval or improvements suggest
+
+Result: Production-ready Playwright tests ✅
+```
+
+**Key design principle: Files are the handoff**
+> Prathi agent output ni file lo save chesthundi → Next agent aa file read chesthundi.
+> Idi agents ki direct communication avasaram ledu — decoupled ✅
+
+---
+
+## <span style="color:#0B7285;"><strong>4) What You Need to Understand — Design Concepts</strong></span>
+
+### Concept 1: Context Loading — How Claude Reads Info
+
+```
+Claude ki 3 types of context sources unnay:
+
+1. CLAUDE.md
+   → Project-level instructions
+   → Always loaded automatically
+   → "Idi mana project, ila behave cheyyi" type instructions
+
+2. Knowledge Skills (domain docs)
+   → Claude auto-discovers cheyyataniki domain knowledge files
+   → Application-specific information
+   → "Ee app business rules ivi" type docs
+
+3. Agent Skills (specialist personas)
+   → /skill-name tho invoke cheyyataniki
+   → Specific role behavior define chestay
+   → "Senior tester laaga behave cheyyi" type instructions
+```
+
+**Hierarchy:**
+```
+CLAUDE.md           → Always present (project foundation)
+Knowledge Skills    → Domain knowledge (auto-loaded)
+Agent Skills        → Specialist behavior (on-demand via /command)
+```
+
+---
+
+### Concept 2: Knowledge Skills — Domain Docs
+
+```
+Claude auto-discovers chesukune files:
+  docs/
+    ├── app-overview.md      ← What is this app?
+    ├── user-flows.md        ← How users navigate?
+    ├── api-contracts.md     ← What APIs exist?
+    └── business-rules.md   ← What are the rules?
+
+Claude ivi automatic ga read chesthundi → context lo add chesthundi
+Tests generate chessinappudu idi use avutundi
+
+Example:
+  Knowledge skill: "Login requires email + password, max 5 retries"
+  Agent will automatically include lockout test scenario ✅
+```
+
+---
+
+### Concept 3: Agent Skills — Specialist Personas
+
+```
+Agent skill = oka .md file with role instructions
+
+Example: /create-scenarios skill file:
+  ---
+  You are a senior functional tester with 10 years experience.
+  When creating scenarios:
+  - Think from user perspective
+  - Include happy path, sad path, edge cases
+  - Consider security scenarios
+  - Format as Gherkin (Given/When/Then)
+  ---
+
+User: /create-scenarios login feature
+Claude: *becomes senior functional tester* → scenarios create chesthundi
+```
+
+**How to invoke:**
+```
+/skill-name  →  Claude that skill adopt chesthundi
+
+/create-scenarios  →  Senior tester persona
+/test-strategy     →  Test architect persona
+/generate-tests    →  Automation engineer persona
+/review-tests      →  QA reviewer persona
+```
+
+---
+
+### Concept 4: Agent Pipeline — Files as Handoff
+
+```
+Why files?
+
+Option A — Direct agent-to-agent:
+  Agent A output → directly to Agent B
+  Problem: If Agent B fails, Agent A re-run cheyyali ❌
+  Problem: Checkpoint ledu — restart from scratch ❌
+
+Option B — Files as handoff (Claude Code approach):
+  Agent A → scenarios.md
+  Agent B reads scenarios.md → strategy.md
+  Agent C reads strategy.md → tests/
+  Agent D reads tests/ → review.md
+
+Benefits:
+  → Oka step fail aithe → just that step re-run cheyyi ✅
+  → Human review cheyyachu between steps ✅
+  → Audit trail — emi jarigindo chudavachu ✅
+  → Agents independent — decoupled ✅
+```
+
+---
+
+### Concept 5: Context Optimization — Token Efficiency
+
+```
+Problem:
+  Claude ki token limit undi.
+  Anni knowledge files load chesthe → tokens waste avutay
+  Relevant context lo unna token space miss avutundi.
+
+Solution — Context Optimization:
+  → Only relevant knowledge skills load cheyyi
+  → Irrelevant domain docs exclude cheyyi
+  → Agent skill lo only needed instructions include cheyyi
+
+Example:
+  /generate-tests agent ki:
+    ✅ Load: Playwright best practices, app selectors
+    ❌ Skip: Business rules docs (tester ki avasaram ledu)
+
+Result: Focused context → Better output → Less cost ✅
+```
+
+---
+
+## <span style="color:#E67700;"><strong>5) Claude Code Skills System — Full Architecture</strong></span>
+
+```
+Project Structure:
+  ├── CLAUDE.md                    ← Project instructions (always loaded)
+  ├── docs/                        ← Knowledge Skills (domain docs)
+  │     ├── app-overview.md
+  │     ├── user-flows.md
+  │     └── business-rules.md
+  ├── .claude/                     ← Agent Skills (specialist personas)
+  │     ├── create-scenarios.md   ← /create-scenarios skill
+  │     ├── test-strategy.md      ← /test-strategy skill
+  │     ├── generate-tests.md     ← /generate-tests skill
+  │     └── review-tests.md       ← /review-tests skill
+  └── playwright/
+        ├── e2e/                   ← Generated tests (handoff files)
+        ├── testdata/
+        └── support/
+
+Execution Flow:
+  /create-scenarios → scenarios.md
+  /test-strategy    → strategy.md
+  /generate-tests   → .spec.ts files (runs + self-fixes)
+  /review-tests     → review-report.md
+```
+
+---
+
+## <span style="color:#C92A2A;"><strong>6) Summary — Claude Code Skills System</strong></span>
+
+```
+What it is:
+  → Specialized AI agents build cheyyataniki framework
+  → Each agent = one role (tester, architect, engineer, reviewer)
+  → Invoked via /skill-name command
+
+4 QA Agents:
+  /create-scenarios  → Test scenarios (Senior Functional Tester)
+  /test-strategy     → Test pyramid assignment (Test Architect)
+  /generate-tests    → Playwright code + self-fix (Automation Engineer)
+  /review-tests      → Code review (Senior QA Reviewer)
+
+Key Concepts:
+  → CLAUDE.md = project foundation (always loaded)
+  → Knowledge Skills = domain docs (auto-discovered)
+  → Agent Skills = specialist personas (/command invoke)
+  → Files = handoff between agents (decoupled pipeline)
+  → Context optimization = only relevant info load (token efficient)
+
+Why powerful:
+  → QA workflow end-to-end automate cheyyachu
+  → Human-like specialist roles AI tho
+  → Self-fixing tests → less manual intervention
+  → Scalable — new skills add cheyyatam easy
+  → Token efficient — waste ledu ✅
+```
+
+<p><span style="color:#364FC7;"><strong>Bottom Line:</strong></span> Claude Code Skills System = AI QA team. <code>/create-scenarios</code> nundi <code>/review-tests</code> daka — oka complete software testing pipeline automated ga run avutundi. Nuvvu feature requirements cheppite, Claude oka senior tester, architect, automation engineer, reviewer — anni roles play chesi production-ready tests deliver chesthundi! 🚀</p>
+
+---
+
+*Ee section lo Claude Code Skills System — 4 agents, design concepts (context loading, knowledge skills, agent skills, pipeline, optimization) cover chesam.*
