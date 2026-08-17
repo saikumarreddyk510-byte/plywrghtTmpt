@@ -1,6 +1,6 @@
 ﻿# <span style="color:#0B7285;"><strong>AI Agent = LLM + MCP — Complete In-Depth Explanation</strong></span>
 
-![AI Agent MCP Architecture Diagram](./AI_Agent_MCP_Diagram.png)
+![AI Agent MCP Architecture Diagram](./images/AI_Agent_MCP_Diagram.png)
 
 ---
 
@@ -279,7 +279,7 @@ Configuration (JSON):
 
 # <span style="color:#0B7285;"><strong>MCP General Architecture — Complete In-Depth Explanation</strong></span>
 
-![MCP General Architecture Diagram](./MCP_General_Architecture.png)
+![MCP General Architecture Diagram](./images/MCP_General_Architecture.png)
 
 ---
 
@@ -1026,3 +1026,4 @@ Key benefit:
 ---
 
 *Ee section lo LLM → Playwright MCP connection, mcp.json explanation, tools list, real examples anni cover chesam.*
+
