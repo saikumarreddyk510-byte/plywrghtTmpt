@@ -1387,3 +1387,264 @@ Workspace-specific:
 ---
 
 *Ee section lo Playwright MCP extension auto-setup, connectivity architecture, 20+ capabilities, real workflows cover chesam.*
+
+
+---
+---
+
+# <span style="color:#0B7285;"><strong>Node.js, npm, npx — Enti, Ela Work Chestay, Vaatiki Relation Enti?</strong></span>
+
+---
+
+## <span style="color:#364FC7;"><strong>1) Node.js — Ante Enti?</strong></span>
+
+**Node.js** = JavaScript ni browser outside (server side / terminal) lo run cheyyataniki unna runtime.
+
+**Mundu:** JavaScript only browser lo run avutundi — webpage lo animations, clicks handle cheyyataniki.
+
+**Node.js vachaka:** JavaScript ippudu nee computer terminal lo kuda run avutundi — files read cheyyachu, servers build cheyyachu, tools run cheyyachu.
+
+```
+Browser lo JavaScript:
+  → DOM manipulate cheyyatam
+  → User clicks handle cheyyatam
+  → Only inside browser ✅
+
+Node.js tho JavaScript:
+  → Files read/write cheyyatam (fs module)
+  → HTTP servers build cheyyatam
+  → Terminal tools run cheyyatam
+  → Databases connect cheyyatam
+  → MCP servers build cheyyatam ✅
+```
+
+**Real analogy:**
+> Python ki Python interpreter unnatlu, JavaScript ki Node.js interpreter. Node.js unte JavaScript ni anywhere run cheyyachu.
+
+**Mana system lo version:**
+```
+node --version  →  v22.18.0
+```
+
+**Playwright MCP ki Node.js enta important?**
+> `@playwright/mcp` oka Node.js package — idi run avvadam ki Node.js **mandatory**. Node.js lekapothe Playwright MCP start avvaadu.
+
+---
+
+## <span style="color:#5F3DC4;"><strong>2) npm — Node Package Manager</strong></span>
+
+**npm** = **N**ode **P**ackage **M**anager
+
+Node.js install chessinappudu npm **automatically** vasthundi — separate install cheyyakkarledu.
+
+**npm emi chesthundi:**
+- JavaScript/Node.js **packages (libraries) install** cheyyatam
+- Packages **manage** cheyyatam (update, delete)
+- Project dependencies track cheyyatam (`package.json` tho)
+
+**Python analogy:**
+```
+Python world:     pip install pandas
+Node.js world:    npm install playwright
+```
+
+**Basic npm commands:**
+```bash
+npm install playwright          # install package locally
+npm install -g typescript       # install globally (any folder lo use cheyyachu)
+npm uninstall playwright        # remove package
+npm update                      # all packages update
+npm list                        # installed packages chudatam
+```
+
+**package.json:**
+> npm project lo `package.json` file undi — idi project dependencies list maintain chesthundi.
+```json
+{
+  "name": "my-project",
+  "dependencies": {
+    "playwright": "^1.45.0"
+  }
+}
+```
+
+**node_modules/ folder:**
+> `npm install` run chesthe, packages ee folder lo download avutay.
+> Idi chala peddaga untundi — git lo push cheyyam (`.gitignore` lo add chestam).
+
+**Mana system lo version:**
+```
+npm --version  →  11.5.2
+```
+
+---
+
+## <span style="color:#2B8A3E;"><strong>3) npx — Node Package eXecute</strong></span>
+
+**npx** = **N**ode **P**ackage e**X**ecute
+
+npm tho pattu npm@5.2+ nundi **automatically** vasthundi.
+
+**npm vs npx difference — Ee okke important point:**
+
+```
+npm install @playwright/mcp   → Package ni nee computer lo INSTALL chesthundi (permanent)
+
+npx @playwright/mcp@latest    → Package ni TEMPORARILY download chesi RUN chesthundi
+                                 (install cheyyadu, run chesaka cache lo unchutundi)
+```
+
+**npx use case — "Run without install":**
+
+```bash
+# Without npx — traditional way:
+npm install -g @playwright/mcp    # global install
+playwright-mcp                    # run
+
+# With npx — clean way:
+npx @playwright/mcp@latest        # download + run in one command ✅
+```
+
+**Why mcp.json lo npx use chesaru?**
+
+```json
+{
+  "command": "npx",
+  "args": ["@playwright/mcp@latest"]
+}
+```
+
+**Reasons:**
+1. **Always latest version** — `@latest` tag unte, run chessinappudu latest version automatically download avutundi
+2. **No global install needed** — nee system lo permanently install cheyyakkarledu
+3. **Clean** — project ki avasaram ledu ainaappudu uninstall cheyyakkarledu, npx cache manage chesthundi
+4. **Auto-update** — nuvvu manually update cheyyakkarledu, `@latest` unte auto latest
+
+**npx caching:**
+```
+First run:
+  npx @playwright/mcp@latest
+  → npm registry nundi download (internet needed, ~few seconds)
+  → Run avutundi
+  → Cache lo save chesthundi
+
+Second run onwards:
+  npx @playwright/mcp@latest
+  → Cache lo already undi → instant run ⚡
+  → New version available aithe automatically fetch
+```
+
+**Mana system lo version:**
+```
+npx --version  →  11.5.2   (npm tho same version vasthundi)
+```
+
+---
+
+## <span style="color:#0B7285;"><strong>4) Vaatiki Relation — How They Connect</strong></span>
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│   Node.js                                               │
+│   ├── JavaScript runtime engine                         │
+│   ├── Install chesthe npm + npx automatic ga vasthay    │
+│   └── Version: v22.18.0                                 │
+│         │                                               │
+│         ├──► npm (Node Package Manager)                 │
+│         │      ├── Packages install/manage chesthundi   │
+│         │      ├── package.json maintain chesthundi     │
+│         │      └── Version: 11.5.2                      │
+│         │                                               │
+│         └──► npx (Node Package Execute)                 │
+│                ├── Packages install cheyyakunda run     │
+│                ├── Always latest version use cheyyachu  │
+│                └── Version: 11.5.2 (npm tho same)      │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Installation chain:**
+```
+Node.js install
+    ↓ (automatically includes)
+npm install
+    ↓ (automatically includes)
+npx available
+```
+
+**Oka line lo relation:**
+> Node.js = engine, npm = package store manager, npx = package runner
+
+---
+
+## <span style="color:#E67700;"><strong>5) Playwright MCP Context Lo — Full Picture</strong></span>
+
+```
+mcp.json:
+{
+  "command": "npx",              ← npx use cheyyi
+  "args": ["@playwright/mcp@latest", "--headed"]
+}
+
+Execution:
+  VS Code reads mcp.json
+      ↓
+  Calls: npx @playwright/mcp@latest --headed
+      ↓
+  npx: Node.js ecosystem use chesi @playwright/mcp package find chesthundi
+      ↓
+  Latest version cache lo ledu aithe: npm registry nundi download
+      ↓
+  Node.js runtime lo @playwright/mcp run avutundi
+      ↓
+  Playwright MCP Server starts
+      ↓
+  Chromium browser (headed — visible window) opens
+      ↓
+  LLM browser control cheyyataniki ready ✅
+```
+
+**Dependency tree:**
+```
+@playwright/mcp package
+    depends on → playwright library
+        depends on → Chromium browser (auto download)
+            runs on → Node.js runtime
+                installed via → npm
+                executed via → npx
+```
+
+---
+
+## <span style="color:#C92A2A;"><strong>6) Summary — Quick Reference</strong></span>
+
+| Tool | Full Form | Role | Comes With |
+|------|-----------|------|------------|
+| **Node.js** | Node JavaScript Runtime | JavaScript ni server/terminal lo run cheyyataniki | Install manually |
+| **npm** | Node Package Manager | Packages install, manage, track | Node.js toh automatic |
+| **npx** | Node Package Execute | Install cheyyakunda packages run cheyyataniki | npm toh automatic |
+
+```
+Mana System Versions:
+  Node.js → v22.18.0
+  npm     → 11.5.2
+  npx     → 11.5.2
+
+mcp.json lo:
+  "command": "npx"                      ← runner
+  "args": ["@playwright/mcp@latest"]    ← package + version tag
+
+Why npx (not npm):
+  npm → permanent install → manual update needed
+  npx → temporary run    → always latest auto ✅
+
+Install order:
+  Node.js install → npm auto → npx auto → ready to use
+```
+
+<p><span style="color:#364FC7;"><strong>Key Takeaway:</strong></span> Node.js = foundation. npm = library. npx = shortcut runner. Mana <code>mcp.json</code> lo <code>npx @playwright/mcp@latest</code> unte — Node.js engine use chesi, npm registry nundi latest Playwright MCP fetch chesi, run chesthundi. Nuvvu manually emi install cheyyakkarledu! 🚀</p>
+
+---
+
+*Ee section lo Node.js, npm, npx — enti, ela work chestay, vaatiki relation, Playwright MCP context lo full picture cover chesam.*
