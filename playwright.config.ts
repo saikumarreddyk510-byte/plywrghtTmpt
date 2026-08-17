@@ -51,7 +51,16 @@ export default defineConfig({
       },
     },
 
-    // ─── Authenticated project pattern ────────────────────────────────────
+    // ─── Shopping Cart tests ──────────────────────────────────────────────
+    {
+      name: "shopping-cart",
+      testMatch: /shoppingCart\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        launchOptions: { args: ["--disable-web-security"] },
+      },
+    },
     // Duplicate this pair for each slice that needs its own session.
     //
     // {
