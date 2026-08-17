@@ -1648,3 +1648,207 @@ Install order:
 ---
 
 *Ee section lo Node.js, npm, npx — enti, ela work chestay, vaatiki relation, Playwright MCP context lo full picture cover chesam.*
+
+
+---
+---
+
+# <span style="color:#0B7285;"><strong>VS Code + Copilot tho Playwright MCP Ela Start Cheyyadam?</strong></span>
+
+---
+
+## <span style="color:#364FC7;"><strong>Step 1: Prerequisites — Mundhu Emi Undali?</strong></span>
+
+```
+✅ Node.js installed    →  node --version  (v18+ recommended)
+✅ VS Code installed    →  latest version
+✅ GitHub Copilot       →  subscription active (Free tier kuda works)
+✅ Playwright MCP ext   →  VS Code marketplace lo install chesina
+✅ .vscode/mcp.json     →  workspace lo present (auto-created by extension)
+```
+
+Mana workspace lo anni already ready:
+- Node.js: v22.18.0 ✅
+- mcp.json: `--headed` mode tho ✅
+
+---
+
+## <span style="color:#5F3DC4;"><strong>Step 2: VS Code lo Correct Workspace Open Cheyyi</strong></span>
+
+```
+File → Open Folder → C:\PlayWrightAI
+```
+
+**Why this folder specifically?**
+> `.vscode/mcp.json` ee folder lo undi. VS Code workspace open chessinappudu — idi detect avutundi → Playwright MCP auto-start avutundi.
+
+Other folder open chesthe mcp.json detect avvaadu → MCP work cheyyadu.
+
+---
+
+## <span style="color:#2B8A3E;"><strong>Step 3: Copilot Chat Open Cheyyi — Agent Mode Enable Cheyyi</strong></span>
+
+VS Code lo Copilot Chat ki 3 modes unnay:
+
+```
+Ask mode    → Simple questions, code help
+Edit mode   → Code editing
+Agent mode  → Tools use cheyyataniki (MCP included) ✅ ← This one!
+```
+
+**Agent mode open cheyyatam:**
+
+```
+Method 1: Keyboard shortcut
+  Ctrl + Alt + I  →  Copilot Chat opens
+
+Method 2: VS Code sidebar
+  Left sidebar lo Copilot icon click
+  → Chat panel opens
+
+Method 3: Command Palette
+  Ctrl + Shift + P → "Copilot: Open Chat"
+```
+
+**Chat panel lo agent mode select cheyyi:**
+
+```
+Chat input box lo — top lo mode dropdown untundi:
+
+[ Ask ▼ ]  →  click → [ Agent ] select cheyyi ✅
+```
+
+---
+
+## <span style="color:#0B7285;"><strong>Step 4: MCP Server Running Undha ani Verify Cheyyi</strong></span>
+
+Agent mode lo type cheyyi:
+
+```
+What tools do you have?
+```
+
+Copilot response lo Playwright tools list chupistundi:
+
+```
+I have access to the following tools:
+- browser_navigate
+- browser_click
+- browser_type
+- browser_snapshot
+- browser_take_screenshot
+- browser_fill_form
+...
+```
+
+Ila vastundi aithe — **Playwright MCP successfully connected!** ✅
+
+Raakapothe — mcp.json check cheyyi, Node.js installed undha check cheyyi.
+
+---
+
+## <span style="color:#E67700;"><strong>Step 5: First Request Cheyyi — Browser Control Start!</strong></span>
+
+Ippudu chat lo directly request type cheyyi. Examples:
+
+### Example 1 — Simple Navigate
+```
+Google.com ki navigate cheyyi and page title cheppu
+```
+
+Copilot:
+- `browser_navigate` tool call chesthundi
+- Chromium window **visible ga** open avutundi (headed mode ✅)
+- Page load avutundi
+- Title chepthundi
+
+---
+
+### Example 2 — Search Automation
+```
+YouTube lo "Python tutorial" search cheyyi, first 3 video titles cheppu
+```
+
+Copilot:
+- YouTube open chesthundi
+- Search box find chesthundi
+- "Python tutorial" type chesthundi
+- Results load avutundi
+- First 3 titles extract chesi niku chepthundi
+
+---
+
+### Example 3 — Screenshot
+```
+Github.com homepage screenshot teyyi
+```
+
+Copilot:
+- GitHub navigate chesthundi
+- Screenshot teyyi
+- Image chat lo show chesthundi
+
+---
+
+### Example 4 — Form Fill
+```
+https://demoqa.com/automation-practice-form lo form fill cheyyi:
+Name: Sai Kumar, Email: sai@test.com, Gender: Male
+```
+
+Copilot:
+- Page open chesthundi
+- Form fields find chesthundi
+- Data fill chesthundi
+- Submit chesthundi
+
+---
+
+## <span style="color:#C92A2A;"><strong>Step 6: Headed Mode Confirm Cheyyi</strong></span>
+
+Mana mcp.json lo `--headed` flag undi:
+
+```json
+"args": ["@playwright/mcp@latest", "--headed"]
+```
+
+Request chessinappudu:
+- Chromium browser **window visible ga** open avutundi 🪟
+- Nuvvu real-time lo browser lo emi jarigindo chudavachu
+- Automation steps screen meeda visible ga execute avutay
+
+**Headless mode tho difference:**
+```
+--headed   → Browser window visible ✅ (mana config)
+(default)  → Browser background lo invisible (window ledu)
+```
+
+---
+
+## <span style="color:#364FC7;"><strong>Troubleshooting — Work Avvakapothe?</strong></span>
+
+| Problem | Solution |
+|---------|---------|
+| Tools list raakapothe | Agent mode select chesava? Ask/Edit mode lo MCP work cheyyadu |
+| Browser open avvakapothe | Node.js installed undha? `node --version` check cheyyi |
+| "playwright not found" | `npx @playwright/mcp@latest --version` terminal lo run cheyyi |
+| MCP connect avvakapothe | VS Code reload: `Ctrl+Shift+P` → "Developer: Reload Window" |
+| Wrong workspace | `C:\PlayWrightAI` folder open chesava? mcp.json aa folder lo undali |
+
+---
+
+## <span style="color:#5F3DC4;"><strong>Quick Start Checklist</strong></span>
+
+```
+□ 1. VS Code lo C:\PlayWrightAI folder open cheyyi
+□ 2. Copilot Chat open cheyyi (Ctrl+Alt+I)
+□ 3. Chat mode → "Agent" select cheyyi
+□ 4. "What tools do you have?" type cheyyi → verify
+□ 5. Request type cheyyi → Chromium window open avutundi → done! 🎉
+```
+
+<p><span style="color:#364FC7;"><strong>That's it!</strong></span> 5 steps — workspace open, agent mode, verify, request. Playwright MCP ready. Nuvvu chat lo cheppindante Copilot browser lo automatic ga chesthundi! 🚀</p>
+
+---
+
+*Ee section lo VS Code + Copilot tho Playwright MCP start cheyyatam — step by step practical guide cover chesam.*
