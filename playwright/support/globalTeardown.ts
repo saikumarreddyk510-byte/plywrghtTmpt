@@ -56,13 +56,25 @@ async function globalTeardown(): Promise<void> {
     );
 
     const allureReportPath = path.join(logFolder, "allure-report");
-    execSync(`"${allureBin}" generate "${destinationFolder}" --clean -o "${allureReportPath}"`, {
-      stdio: "inherit",
-    });
-    console.log(`Allure report generated at: ${allureReportPath}`);
 
-    if (process.env.OPEN_ALLURE_REPORT === "true") {
-      execSync(`"${allureBin}" open "${allureReportPath}"`, { stdio: "inherit" });
+    // Skip report generation if Java is not installed (allure-commandline requires Java).
+    let javaAvailable = false;
+    try {
+      execSync("java -version", { stdio: "ignore" });
+      javaAvailable = true;
+    } catch {
+      console.log("Java not found — skipping Allure HTML report generation. Test results saved to: " + destinationFolder);
+    }
+
+    if (javaAvailable) {
+      execSync(`"${allureBin}" generate "${destinationFolder}" --clean -o "${allureReportPath}"`, {
+        stdio: "inherit",
+      });
+      console.log(`Allure report generated at: ${allureReportPath}`);
+
+      if (process.env.OPEN_ALLURE_REPORT === "true") {
+        execSync(`"${allureBin}" open "${allureReportPath}"`, { stdio: "inherit" });
+      }
     }
   } catch (error) {
     console.error("globalTeardown error:", error);
