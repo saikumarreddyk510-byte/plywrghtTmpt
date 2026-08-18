@@ -135,6 +135,20 @@ flowchart LR
     end
 ```
 
+**Named, tool-restricted agents, not just a generic spawn.** Steps 2 and 3
+run as `test-builder` and `test-reviewer` (`.claude/agents/*.md`) rather than
+the built-in `general-purpose` type. The distinction that matters:
+`test-reviewer`'s tool list has no `Edit` and no `Bash` — it is *structurally*
+incapable of modifying the code it reviews or running anything, not just
+instructed not to. "Review proposes, it doesn't silently rewrite" (§9,
+`docs/roadmap.md`'s guardrail list) is enforced at the tool-permission layer
+for this role, not only in the prompt. `test-builder` has no `Agent` tool, so
+the chain stays flat — two hops, never a tree of subagents spawning further
+subagents. Both personas point at the same skill files
+(`generate-tests`/`review-tests`/`heal-test`) as their process definition
+rather than re-describing it, for the same reason the Copilot prompt files do
+(§12) — one process, however many drivers or roles read it.
+
 ## 6. Model tiering
 
 | Step | Work | Model |

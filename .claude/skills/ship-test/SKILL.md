@@ -49,44 +49,35 @@ cheap.
 
 ## Step 2 — Build (delegate — foreground, default model, do not downgrade)
 
-Spawn one subagent (`Agent`, `subagent_type: "general-purpose"`, no `model`
+Spawn one subagent (`Agent`, `subagent_type: "test-builder"`, no `model`
 override — correctness matters most here, `run_in_background: false` because the
-next step depends on its result). Give it, in the prompt itself (so it doesn't have
-to rediscover them):
+next step depends on its result). `test-builder`'s own definition
+(`.claude/agents/test-builder.md`) already knows its process and tool limits
+— give it only what's specific to this run:
 
 - The TC block from Step 1.
 - The one closest existing spec + PO file path to mirror line-for-line in
   structure (import order, `beforeEach`, logging, naming).
-- An explicit instruction to read the `playwright-best-practices` skill and the
-  `app-domain` skill, then follow the `generate-tests` skill's
-  **Write → Verify via Playwright MCP → Run → Debug loop** (cap 3 retries).
-- **MCP discipline**: take one `browser_snapshot`/navigation per page under test to
-  build the selector map, verify only the elements this scenario touches, then
-  write the Page Object from that — don't re-snapshot the whole page after every
-  single action.
-- **Structural determinism**: copy the required spec/PO skeleton from the
-  `playwright-best-practices` skill verbatim and only vary selectors, data, and
-  assertions — don't redesign the shape of the file.
-- Instruction to return **only**: files created/changed, TC-ID(s) covered, final
-  pass/fail from the real run, and any app bugs found — not full file contents,
-  not intermediate reasoning.
+
+`test-builder` has no `Agent` tool — it cannot itself spawn further
+subagents, so this stays a flat two-hop chain, not a tree.
 
 ## Step 3 — Review (delegate — foreground, scoped to the new file only)
 
-Spawn a second subagent (`Agent`, `subagent_type: "general-purpose"`,
-`run_in_background: false`) with **only** the exact file paths Step 2 touched, and
-the instruction to run the `review-tests` skill's checklist against those files
-only — never the whole suite. Ask it to return only Critical/Important issues (max
-5 lines each) plus the score. This scoping, not a cheaper model, is the safe way to
-keep review fast — don't downgrade the review model unless the user passed
-`--fast`.
+Spawn a second subagent (`Agent`, `subagent_type: "test-reviewer"`,
+`run_in_background: false`) with **only** the exact file paths Step 2
+touched. `test-reviewer` has no `Edit` or `Bash` — it structurally cannot
+modify what it's reviewing, only report on it, which is what makes its
+output trustworthy without re-checking it yourself. This scoping (one file,
+not the whole suite), not a cheaper model, is the safe way to keep review
+fast — don't downgrade the review model unless the user passed `--fast`.
 
 ## Step 4 — Fix loop (at most once)
 
-If Step 3 returned any `[CRITICAL]` issue, spawn one more build subagent exactly
-like Step 2, but scoped to just those fixes on the existing files. Re-review isn't
-required after this — report the fix as applied and let the user re-run the review
-skill later if they want a second pass.
+If Step 3 returned any `[CRITICAL]` issue, spawn one more `test-builder`
+subagent exactly like Step 2, but scoped to just those fixes on the existing
+files. Re-review isn't required after this — report the fix as applied and
+let the user re-run `/review-tests` later if they want a second pass.
 
 ## Step 5 — Report (inline, short)
 

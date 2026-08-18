@@ -298,6 +298,11 @@
     </figure>
 
     <p>Each subagent reads <code>app-domain</code>, <code>playwright-best-practices</code>, and the one closest existing spec/PO it needs, does its work — including the multi-round MCP debug loop, which can be the most expensive part of a run — and returns a short summary. None of that working context ever enters this orchestrator thread.</p>
+
+    <div class="panel warn">
+      <span class="label">Named, tool-restricted agents — not just a generic spawn</span>
+      Steps 2 and 3 run as <code>test-builder</code> and <code>test-reviewer</code> (<code>.claude/agents/*.md</code>), not the built-in <code>general-purpose</code> type. What matters: <code>test-reviewer</code>'s tool list has no <code>Edit</code> and no <code>Bash</code> — it is <em>structurally</em> incapable of modifying what it reviews, not just instructed not to. "Review proposes, it doesn't silently rewrite" is enforced at the tool-permission layer for this role, not only in the prompt. <code>test-builder</code> has no <code>Agent</code> tool, so the chain stays flat — two hops, never a tree of subagents spawning further subagents.
+    </div>
   </section>
 
   <section class="sheet" id="s4">
