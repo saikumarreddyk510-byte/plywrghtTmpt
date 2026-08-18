@@ -66,6 +66,17 @@ export default defineConfig({
       },
     },
 
+    // ─── AACargo Facilities tests ────────────────────────────────────────────
+    {
+      name: "facilities",
+      testMatch: /facilities\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        launchOptions: { args: ["--disable-web-security"] },
+      },
+    },
+
     // Duplicate the block above for each new unauthenticated spec group, and
     // the commented pair below for each slice that needs its own login session.
     //

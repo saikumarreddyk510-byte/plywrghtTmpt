@@ -1,0 +1,42 @@
+{
+  "dfw": {
+    "searchCode": "dfw",
+    "expectedUrl": "/AACargo/ua/facilities/DFW",
+    "multipleFacilitiesMsg": "There are multiple facilities at this airport.",
+    "cargoTerminal": {
+      "heading": "Cargo Terminal",
+      "address": "1816 Airport North Service Road",
+      "city": "DFW Airport, TX 75261",
+      "allShipmentsMONSAT": "03:00 AM to 10:30 PM",
+      "allShipmentsSUN": "06:00 AM to 10:30 PM",
+      "dangerousGoods": "06:00 AM to 08:00 PM",
+      "directionsUrl": "32.91378,-97.03849"
+    },
+    "pps": {
+      "heading": "Priority Parcel Service",
+      "address": "2300 Crossunder #3",
+      "city": "DFW Airport, TX 75261",
+      "dailyHours": "04:30 AM to 12:00 AM",
+      "directionsUrl": "32.900307,-97.04058"
+    },
+    "customs": {
+      "heading": "Customs Information",
+      "phone": "972-870-7460",
+      "phoneHref": "tel:972-870-7460",
+      "firmsCode": "T275",
+      "portCode": "5501"
+    },
+    "airportInfo": {
+      "heading": "Airport Information",
+      "animalHolding": "Animal holding area: Yes",
+      "securityCage": "Security cage: Yes",
+      "kenneling": "Kenneling facility: Yes",
+      "airtrays": "Airtrays available for sale: Yes"
+    },
+    "dropOffTimes": {
+      "heading": "Minimum Drop-off Times",
+      "usDomesticBtn": "US Domestic",
+      "intlOutboundBtn": "International Outbound"
+    }
+  }
+}
