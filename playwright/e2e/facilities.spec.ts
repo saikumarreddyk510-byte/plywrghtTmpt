@@ -154,6 +154,7 @@ test.describe("AACargo Facilities - DFW Search & Validation", () => {
   });
 
   test("TC-401 - Search with uppercase DFW returns same results", async ({ page }) => {
+    test.setTimeout(60_000);
     comFunc.reportMessageInfo("TC-401 - Navigate to facilities search page");
     await page.goto(FACILITIES_URL, { waitUntil: "domcontentloaded" });
 

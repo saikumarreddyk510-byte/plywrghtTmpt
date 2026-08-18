@@ -102,8 +102,8 @@ export class FacilitiesPage {
 
   async verifyCargoTerminalAddress(address: string, city: string): Promise<void> {
     await expect(this.getCargoTerminalHeading()).toBeVisible({ timeout: 10_000 });
-    await expect(this.getCargoTerminalAddress()).toBeVisible();
-    await expect(this.getCargoTerminalCity()).toBeVisible();
+    await expect(this.page().locator(`text=${address}`).first()).toBeVisible();
+    await expect(this.page().locator(`text=${city}`).first()).toBeVisible();
     comFunc.reportMessagePass("FacilitiesPage.verifyCargoTerminalAddress() - Address confirmed ✅");
   }
 
@@ -144,7 +144,7 @@ export class FacilitiesPage {
 
   // ─── Customs Information ───────────────────────────────────────────────────
   getCustomsHeading() {
-    return this.page().locator("h2", { hasText: "Customs Information" });
+    return this.page().locator("h2", { hasText: "Customs Information" }).first();
   }
 
   getCustomsPhone() {
@@ -175,7 +175,7 @@ export class FacilitiesPage {
 
   // ─── Airport Information ────────────────────────────────────────────────────
   getAirportInfoHeading() {
-    return this.page().locator("h2", { hasText: "Airport Information" });
+    return this.page().locator("h2", { hasText: "Airport Information" }).first();
   }
 
   async verifyAirportInfo(): Promise<void> {
@@ -230,8 +230,8 @@ export class FacilitiesPage {
     const customsIdx = headings.findIndex(h => h.includes("Customs Information"));
     const airportIdx = headings.findIndex(h => h.includes("Airport Information"));
     expect(cargoIdx).toBeLessThan(ppsIdx);
-    expect(customsIdx).toBeGreaterThan(0);
-    expect(airportIdx).toBeGreaterThan(0);
+    expect(ppsIdx).toBeLessThan(customsIdx);
+    expect(customsIdx).toBeLessThan(airportIdx);
     comFunc.reportMessagePass("FacilitiesPage.verifySectionOrder() - Section order confirmed ✅");
   }
 
