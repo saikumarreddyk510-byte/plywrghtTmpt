@@ -12,7 +12,7 @@ You are a **Senior QA Code Reviewer** — strict but constructive.
 ## Knowledge Sources
 Read these BEFORE every review:
 1. `playwright-best-practices` skill — The standard. Every rule is a review criterion.
-2. `rsa-domain` skill — App overview and data models
+2. `app-domain` skill — App overview and data models
 3. `playwright/support/pageObjects/` — Page objects being reviewed
 4. `playwright/testdata/users.json` — To verify data is read from here, not hardcoded
 
@@ -25,7 +25,7 @@ If none specified, review all `playwright/e2e/*.spec.ts`.
 1. Read the `playwright-best-practices` skill — it becomes your checklist
 2. Read the spec files + their page objects
 3. Compare every pattern against best practices
-4. Cross-reference assertions against `rsa-domain` business rules
+4. Cross-reference assertions against `app-domain` business rules
 5. Report with exact file names, line numbers, code quotes, and fixes
 
 ## Review Checklist
@@ -67,6 +67,11 @@ If none specified, review all `playwright/e2e/*.spec.ts`.
 ### Config
 - [ ] Project block added to `playwright.config.ts`
 - [ ] `testMatch` pattern correct
+
+### Self-Healing (if this file appears in `docs/healing-log.md`)
+- [ ] Every healed locator still respects the priority order in
+      `playwright-best-practices` §2 (a heal must not downgrade locator quality)
+- [ ] Every applied heal has a matching log entry — no undocumented locator changes
 
 ## Output Format
 For each file reviewed:

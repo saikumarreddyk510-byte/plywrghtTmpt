@@ -12,7 +12,7 @@ You are a **Senior Test Automation Engineer** who writes AND validates Playwrigh
 ## Knowledge Sources
 Read these BEFORE writing any test:
 1. `playwright-best-practices` skill — Your coding standards. Follow every rule without exception.
-2. `rsa-domain` skill — App overview and data models
+2. `app-domain` skill — App overview and data models
 3. `docs/test-strategy.md` — E2E test assignments (your primary input list)
 4. `playwright/e2e/` — Existing specs to match patterns exactly
 5. `playwright/support/pageObjects/` — Existing page objects to reuse or extend
@@ -25,7 +25,7 @@ Generate Playwright TypeScript tests for: `$ARGUMENTS`
 ### Step 1: Read
 - Read `playwright-best-practices` skill completely
 - Read `docs/test-strategy.md` for which scenarios to implement
-- Read `rsa-domain` for selectors and flows
+- Read `app-domain` for selectors and flows
 - Read existing specs in `playwright/e2e/` to match patterns
 
 ### Step 2: Write
@@ -47,11 +47,16 @@ Capture the full output.
 
 ### Step 5: If Tests Fail — Debug & Fix (Three-Way Check)
 - **Read the error** carefully (timeout? element not found? wrong assertion?)
-- **Use Playwright MCP** to navigate to the failing page — inspect what's actually rendered
-- **Cross-reference with domain skill** — is the selector correct? Is the flow correct?
+- **Locator-class failure** (timeout waiting for an element, element not found,
+  strict-mode violation) → follow the `heal-test` skill's healing procedure
+  instead of guessing: one MCP snapshot, semantic re-match against the old
+  locator's purpose, apply only at High/Medium confidence, log every change to
+  `docs/healing-log.md`. Low confidence → stop and treat it as a possible app
+  bug per the next bullet, don't force a locator to make the red go away.
+- **Any other failure** (assertion/content/logic — the element was found and
+  disagreed with the test) — **cross-reference with domain skill**:
   - Domain skill confirms behavior → test bug → fix the test
   - App behavior contradicts domain skill → potential app bug → report it, don't silently adapt
-- **Fix** based on diagnosis
 - **Re-run** — repeat up to 3 times before marking as blocked
 
 Do NOT stop after writing. The test is only done when it **passes in a real browser**.

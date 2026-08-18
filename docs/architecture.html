@@ -1,0 +1,477 @@
+<title>Ship Test Blueprint</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --ground: #0c2542;
+    --ground-raised: #123258;
+    --ground-sunken: #0a1e38;
+    --line: #e3f3ff;
+    --line-dim: #9cbedd;
+    --line-faint: #3f6288;
+    --grid: rgba(158, 200, 235, 0.07);
+    --accent: #58e6cc;
+    --accent-soft: rgba(88, 230, 204, 0.13);
+    --warn: #ffb454;
+    --warn-soft: rgba(255, 180, 84, 0.12);
+    --danger: #ff8f7a;
+    --shadow: 0 1px 0 rgba(227, 243, 255, 0.05) inset, 0 18px 40px -22px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+      var(--ground);
+    color: var(--line);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: "Bahnschrift", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif;
+    font-weight: 700;
+    text-wrap: balance;
+    color: var(--line);
+    letter-spacing: 0.01em;
+  }
+  code, pre, .mono, .tag, .stamp { font-family: "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace; }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px 90px; }
+  @media (max-width: 600px) { .wrap { padding: 0 14px 70px; } }
+
+  /* ---------- cover ---------- */
+  .cover {
+    padding: 70px 24px 46px;
+    text-align: left;
+    border-bottom: 2px solid var(--line-faint);
+    max-width: 900px; margin: 0 auto;
+  }
+  .cover .stamp {
+    display: inline-block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--line-faint); padding: 5px 12px; border-radius: 3px;
+    margin-bottom: 22px;
+  }
+  .cover h1 { font-size: clamp(2rem, 5vw, 3.1rem); margin: 0 0 16px; }
+  .cover p.lede { color: var(--line-dim); font-size: 1.08rem; max-width: 60ch; margin: 0 0 30px; }
+  .stat-row { display: flex; flex-wrap: wrap; gap: 14px; }
+  .stat {
+    border: 1px solid var(--line-faint); border-radius: 6px; padding: 12px 16px; min-width: 190px;
+    background: var(--ground-raised);
+  }
+  .stat .from { color: var(--line-dim); font-size: 0.82rem; }
+  .stat .to { color: var(--accent); font-size: 1.05rem; font-weight: 700; margin-top: 2px; }
+  .stat .arrow { color: var(--line-faint); }
+
+  /* ---------- sheet (section) shell ---------- */
+  .sheet { padding: 54px 0; border-bottom: 1px solid rgba(158,200,235,0.14); scroll-margin-top: 16px; }
+  .sheet:last-of-type { border-bottom: none; }
+  .sheet-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    border-bottom: 1px solid var(--line-faint); padding-bottom: 10px; margin-bottom: 22px;
+  }
+  .sheet-head h2 { font-size: 1.5rem; margin: 0; }
+  .sheet-head .stamp { color: var(--line-faint); font-size: 0.72rem; letter-spacing: 0.1em; white-space: nowrap; }
+  .sheet p.dek { color: var(--line-dim); max-width: 68ch; margin: -8px 0 22px; }
+  .sheet > p { max-width: 74ch; }
+  .sheet ul, .sheet ol { max-width: 74ch; padding-left: 1.25em; }
+  .sheet li { margin: 5px 0; }
+
+  /* ---------- jump strip ---------- */
+  .jump { display: flex; flex-wrap: wrap; gap: 6px 4px; padding: 16px 24px 0; max-width: 900px; margin: 0 auto; }
+  .jump a {
+    font-size: 0.72rem; text-decoration: none; color: var(--line-dim); border: 1px solid var(--line-faint);
+    padding: 5px 10px; border-radius: 3px; letter-spacing: 0.03em;
+  }
+  .jump a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ---------- panels / tables ---------- */
+  .panel {
+    background: var(--ground-raised); border: 1px solid var(--line-faint); border-radius: 8px;
+    padding: 16px 20px; margin: 16px 0; box-shadow: var(--shadow);
+  }
+  .panel.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .panel .label { display:block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; }
+  .panel.warn .label { color: var(--warn); }
+
+  .tbl-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line-faint); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.87rem; min-width: 460px; }
+  th, td { padding: 9px 13px; border-bottom: 1px solid rgba(158,200,235,0.16); text-align: left; }
+  thead th {
+    background: var(--ground-sunken); font-family: "Cascadia Code", monospace; font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--line-dim);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(88,230,204,0.05); }
+  td code, th code { color: var(--accent); background: none; padding: 0; }
+
+  pre.code {
+    background: var(--ground-sunken); border: 1px solid var(--line-faint); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; color: var(--line); margin: 16px 0;
+  }
+  pre.code .k { color: var(--accent); }
+  pre.code .c { color: var(--line-faint); }
+
+  .fig { margin: 22px 0; }
+  .fig svg { width: 100%; height: auto; display: block; }
+  .fig figcaption { color: var(--line-dim); font-size: 0.84rem; margin-top: 10px; max-width: 74ch; }
+
+  .lever-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 10px; margin: 18px 0; }
+  .lever { border: 1px solid var(--line-faint); border-radius: 8px; padding: 12px 14px; background: var(--ground-raised); }
+  .lever b { display:block; color: var(--accent); font-size: 0.88rem; margin-bottom: 3px; }
+  .lever span { font-size: 0.83rem; color: var(--line-dim); }
+
+  .footer { padding: 40px 0 10px; color: var(--line-faint); font-size: 0.82rem; text-align: center; }
+
+  ::selection { background: var(--accent-soft); color: var(--line); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="cover">
+  <span class="stamp">PlayWrightAI · Authoring Layer · Rev 01</span>
+  <h1>One prompt in.<br />One passing spec out.</h1>
+  <p class="lede">The architecture behind <code>/ship-test</code> — how a scenario written in plain English becomes a reviewed, real-browser-verified Playwright spec, without the token bill growing every time you run it. A template, not a project — nothing here points at one app.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="from">Manual pipeline</div><div class="to">4 commands <span class="arrow">→</span> 1 prompt</div></div>
+    <div class="stat"><div class="from">Context per run</div><div class="to">grows every time <span class="arrow">→</span> flat every time</div></div>
+    <div class="stat"><div class="from">Review scope</div><div class="to">whole suite <span class="arrow">→</span> the new file only</div></div>
+    <div class="stat"><div class="from">MCP for Claude Code</div><div class="to">unregistered <span class="arrow">→</span> wired (<code>.mcp.json</code>)</div></div>
+    <div class="stat"><div class="from">Domain knowledge</div><div class="to">bound to one app <span class="arrow">→</span> fill-in template</div></div>
+    <div class="stat"><div class="from">Broken locator</div><div class="to">guess &amp; retry <span class="arrow">→</span> semantic re-locate</div></div>
+    <div class="stat"><div class="from">A red run</div><div class="to">sits there <span class="arrow">→</span> triaged &amp; commented automatically</div></div>
+    <div class="stat"><div class="from">AI vendor</div><div class="to">required <span class="arrow">→</span> optional — Claude Code or Copilot, or neither in CI</div></div>
+  </div>
+</div>
+
+<nav class="jump" aria-label="Sheet index">
+  <a href="#s1">01 · Two layers</a>
+  <a href="#s2">02 · The pipeline</a>
+  <a href="#s3">03 · Context isolation</a>
+  <a href="#s4">04 · Skill roster</a>
+  <a href="#s5">05 · Self-healing</a>
+  <a href="#s6">06 · Model &amp; token levers</a>
+  <a href="#s7">07 · MCP wiring</a>
+  <a href="#s8">08 · One-shot vs manual</a>
+  <a href="#s9">09 · Bootstrapping</a>
+  <a href="#s10">10 · CI &amp; triage</a>
+  <a href="#s11">11 · Driving from Copilot</a>
+</nav>
+
+<div class="wrap">
+
+  <section class="sheet" id="s1">
+    <div class="sheet-head"><h2>Two layers, on purpose</h2><span class="stamp">SHEET 01/11</span></div>
+    <p class="dek">The framework that runs tests and the system that writes them don't know about each other — and shouldn't.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>What it is</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Execution</strong></td><td>Playwright + TypeScript: POM, Allure, logging, smoke/regression gate, SauceLabs. Runs tests, no AI involved, no app hardcoded.</td><td>Already built — <code>README.md</code></td></tr>
+          <tr><td><strong>Authoring</strong></td><td>Claude Code skills + Playwright MCP + subagents. Writes the tests the execution layer runs, using domain knowledge supplied per project (Sheet 09).</td><td>This document</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Every file the authoring layer produces follows the execution layer's own conventions — <code>setPage()</code>, <code>comFunc</code> logging, POM structure, <code>testdata/*.json</code>. It never invents a new pattern; it copies the one already there. Neither layer hardcodes an app — both take it as configuration.</p>
+  </section>
+
+  <section class="sheet" id="s2">
+    <div class="sheet-head"><h2>The pipeline</h2><span class="stamp">SHEET 02/11</span></div>
+    <p class="dek">Steps 0–1 run inline, in this thread. Steps 2–3 are separate subagent calls — the boundary that keeps this cheap.</p>
+
+    <figure class="fig">
+      <svg viewBox="0 0 900 290" role="img" aria-label="Pipeline diagram: a prompt enters the orchestrator, which triages inline, then spawns a build subagent and a review subagent inside an isolated-context boundary, with a one-time fix loop back to build on a critical finding, before returning a short summary as the report.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" color="#6f93b8">
+          <!-- prompt -> orchestrator -->
+          <line x1="118" y1="120" x2="182" y2="120" marker-end="url(#arrow)" />
+          <!-- orchestrator -> boundary -->
+          <line x1="368" y1="120" x2="404" y2="120" marker-end="url(#arrow)" />
+          <!-- boundary -> report -->
+          <line x1="742" y1="120" x2="778" y2="120" marker-end="url(#arrow)" />
+          <!-- build -> review -->
+          <line x1="540" y1="98" x2="540" y2="150" marker-end="url(#arrow)" />
+        </g>
+        <!-- loop back review -> build, dashed -->
+        <path d="M 650 210 C 730 210 730 70 660 70" fill="none" stroke="var(--warn)" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+        <text x="700" y="45" font-size="11" fill="var(--warn)" text-anchor="middle">if CRITICAL → fix ×1</text>
+
+        <!-- edge labels -->
+        <text x="150" y="108" font-size="10.5" fill="#9cbedd" text-anchor="middle">one message</text>
+        <text x="386" y="108" font-size="10.5" fill="#58e6cc" text-anchor="middle">spawn ×2</text>
+        <text x="386" y="121" font-size="10.5" fill="#58e6cc" text-anchor="middle">fresh context</text>
+        <text x="760" y="108" font-size="10.5" fill="#9cbedd" text-anchor="middle">short</text>
+        <text x="760" y="121" font-size="10.5" fill="#9cbedd" text-anchor="middle">summary</text>
+
+        <!-- prompt box -->
+        <rect x="10" y="95" width="108" height="50" rx="5" fill="var(--ground-raised)" stroke="#6f93b8" stroke-width="1.3" />
+        <text x="64" y="124" font-size="12" fill="#e3f3ff" text-anchor="middle">Prompt</text>
+
+        <!-- orchestrator box -->
+        <rect x="182" y="80" width="186" height="80" rx="5" fill="var(--ground-raised)" stroke="#6f93b8" stroke-width="1.3" />
+        <text x="275" y="112" font-size="12" fill="#e3f3ff" text-anchor="middle">Orchestrator</text>
+        <text x="275" y="130" font-size="10.5" fill="#9cbedd" text-anchor="middle">step 0–1 triage, inline</text>
+        <text x="275" y="145" font-size="10.5" fill="#9cbedd" text-anchor="middle">no subagent yet</text>
+
+        <!-- isolated boundary -->
+        <rect x="404" y="20" width="338" height="240" rx="8" fill="none" stroke="#58e6cc" stroke-width="1.3" stroke-dasharray="5 5" />
+        <text x="422" y="38" font-size="10.5" fill="#58e6cc">ISOLATED CONTEXT</text>
+
+        <!-- build box -->
+        <rect x="440" y="58" width="200" height="46" rx="5" fill="var(--ground-sunken)" stroke="#e3f3ff" stroke-width="1.2" />
+        <text x="540" y="77" font-size="12" fill="#e3f3ff" text-anchor="middle">Step 2 — Build</text>
+        <text x="540" y="92" font-size="10" fill="#9cbedd" text-anchor="middle">write · MCP verify · run · debug</text>
+
+        <!-- review box -->
+        <rect x="440" y="150" width="200" height="46" rx="5" fill="var(--ground-sunken)" stroke="#e3f3ff" stroke-width="1.2" />
+        <text x="540" y="169" font-size="12" fill="#e3f3ff" text-anchor="middle">Step 3 — Review</text>
+        <text x="540" y="184" font-size="10" fill="#9cbedd" text-anchor="middle">checklist, new file only</text>
+
+        <!-- report box -->
+        <rect x="778" y="95" width="112" height="50" rx="5" fill="var(--ground-raised)" stroke="#6f93b8" stroke-width="1.3" />
+        <text x="834" y="118" font-size="12" fill="#e3f3ff" text-anchor="middle">Step 5</text>
+        <text x="834" y="133" font-size="11" fill="#9cbedd" text-anchor="middle">Report</text>
+      </svg>
+      <figcaption>Fig. 1 — Steps 2 and 3 run inside a dashed isolated-context boundary: two fresh subagent calls, each returning a short summary instead of its working transcript. A critical review finding loops back to Build once (amber, dashed) before the orchestrator reports out.</figcaption>
+    </figure>
+
+    <ol>
+      <li><strong>Step 0 — Resolve input.</strong> Scenario text, a TC-ID, or blank (pull next unimplemented TC). Not browser-observable? Stop and redirect to Unit/API.</li>
+      <li><strong>Step 1 — Triage, inline.</strong> Formalize into a TC block, classify the layer in one line, grep (not read) for reuse.</li>
+      <li><strong>Step 2 — Build, delegated.</strong> Write the Page Object + spec + config entry, verify selectors against the real page via Playwright MCP, run it, debug up to 3 times.</li>
+      <li><strong>Step 3 — Review, delegated.</strong> Best-practices checklist against the new file(s) only.</li>
+      <li><strong>Step 4 — Fix, once.</strong> Only if Step 3 found a <code>[CRITICAL]</code> issue.</li>
+      <li><strong>Step 5 — Report, inline.</strong> TC-ID, files, pass/fail, score — under 10 lines.</li>
+    </ol>
+
+    <div class="panel warn">
+      <span class="label">Guard rail</span>
+      Step 1 checks whether <code>app-domain</code> is still the shipped-empty template before writing anything. A scenario generated against an empty domain skill is a guess dressed up as a test — the pipeline stops and asks you to fill it in first (Sheet 09) rather than produce that.
+    </div>
+  </section>
+
+  <section class="sheet" id="s3">
+    <div class="sheet-head"><h2>Why subagents</h2><span class="stamp">SHEET 03/11</span></div>
+    <p class="dek">Run everything in one long conversation and the tenth scenario of the day pays for the reading done by the first nine.</p>
+
+    <figure class="fig">
+      <svg viewBox="0 0 640 230" role="img" aria-label="Line chart comparing context size across four ship-test runs in one session: running every stage inline climbs step by step each run, while delegating build and review to subagents stays flat across all four runs.">
+        <g stroke="#3f6288" stroke-width="1">
+          <line x1="60" y1="20" x2="60" y2="190" />
+          <line x1="60" y1="190" x2="600" y2="190" />
+        </g>
+        <g fill="#9cbedd" font-size="10.5">
+          <text x="52" y="194" text-anchor="end">0</text>
+          <text x="20" y="30">context</text>
+          <text x="20" y="42">size</text>
+        </g>
+        <g fill="#9cbedd" font-size="10.5" text-anchor="middle">
+          <text x="130" y="206">run 1</text>
+          <text x="270" y="206">run 2</text>
+          <text x="410" y="206">run 3</text>
+          <text x="550" y="206">run 4</text>
+        </g>
+        <!-- inline staircase, rising -->
+        <polyline points="130,150 130,150 270,110 270,110 410,68 410,68 550,25" fill="none" stroke="#ff8f7a" stroke-width="2" />
+        <circle cx="130" cy="150" r="3" fill="#ff8f7a" /><circle cx="270" cy="110" r="3" fill="#ff8f7a" />
+        <circle cx="410" cy="68" r="3" fill="#ff8f7a" /><circle cx="550" cy="25" r="3" fill="#ff8f7a" />
+        <text x="558" y="20" font-size="11" fill="#ff8f7a">everything inline</text>
+
+        <!-- subagent flat -->
+        <polyline points="130,168 270,168 410,168 550,168" fill="none" stroke="#58e6cc" stroke-width="2" />
+        <circle cx="130" cy="168" r="3" fill="#58e6cc" /><circle cx="270" cy="168" r="3" fill="#58e6cc" />
+        <circle cx="410" cy="168" r="3" fill="#58e6cc" /><circle cx="550" cy="168" r="3" fill="#58e6cc" />
+        <text x="558" y="180" font-size="11" fill="#58e6cc">subagent per stage</text>
+      </svg>
+      <figcaption>Fig. 2 — Four <code>/ship-test</code> calls in one session. Inline execution carries every prior run's domain-doc and best-practices reads forward (red, climbing). Delegating Build and Review to fresh subagents keeps the orchestrator's own context — and therefore every later run's starting cost — flat (teal).</figcaption>
+    </figure>
+
+    <p>Each subagent reads <code>app-domain</code>, <code>playwright-best-practices</code>, and the one closest existing spec/PO it needs, does its work — including the multi-round MCP debug loop, which can be the most expensive part of a run — and returns a short summary. None of that working context ever enters this orchestrator thread.</p>
+  </section>
+
+  <section class="sheet" id="s4">
+    <div class="sheet-head"><h2>Skill roster</h2><span class="stamp">SHEET 04/11</span></div>
+    <p class="dek">Two knowledge skills, four pipeline stages, one orchestrator.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Skill</th><th>Invocation</th><th>Reads</th><th>Writes</th></tr></thead>
+        <tbody>
+          <tr><td><code>app-domain</code></td><td>never directly</td><td>—</td><td>— (ships empty; fill in per project, Sheet 09)</td></tr>
+          <tr><td><code>playwright-best-practices</code></td><td>never directly</td><td>—</td><td>— (reference only)</td></tr>
+          <tr><td><code>create-scenarios</code></td><td><code>/create-scenarios [feature]</code></td><td>domain, existing specs</td><td><code>docs/test-scenarios.md</code></td></tr>
+          <tr><td><code>test-strategy</code></td><td><code>/test-strategy [feature]</code></td><td>scenarios doc, domain</td><td><code>docs/test-strategy.md</code></td></tr>
+          <tr><td><code>generate-tests</code></td><td><code>/generate-tests [flow]</code></td><td>best-practices, domain, strategy doc, MCP</td><td>spec + PO + config entry</td></tr>
+          <tr><td><code>review-tests</code></td><td><code>/review-tests [file]</code></td><td>best-practices, spec(s)</td><td><code>docs/review-report.md</code></td></tr>
+          <tr><td><strong><code>ship-test</code></strong></td><td><strong><code>/ship-test &lt;scenario&gt;</code></strong>, or just paste one</td><td>orchestrates all four above, via subagents</td><td>everything above, end to end</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The two knowledge skills are marked <code>user-invocable: false</code> on purpose — not commands, shared context every other skill pulls in on demand, kept in one place instead of copied into five.</p>
+    <p><code>heal-test</code> isn't in the table above by accident — it's not a pipeline stage, it's a procedure the pipeline calls into. See Sheet 05.</p>
+  </section>
+
+  <section class="sheet" id="s5">
+    <div class="sheet-head"><h2>Self-healing locators</h2><span class="stamp">SHEET 05/11</span></div>
+    <p class="dek">Selector rot is the highest-frequency maintenance cost in any real Playwright suite — this is the pipeline's answer to it.</p>
+    <p><code>generate-tests</code>' Step 5 debug loop routes locator-class failures (timeout waiting for an element, element not found, strict-mode violation) to the <code>heal-test</code> skill instead of guessing-and-retrying the same selector:</p>
+    <ol>
+      <li>Read the failure's <strong>trace</strong> (<code>trace: "retain-on-failure"</code> in <code>playwright.config.ts</code>) — the exact DOM at the moment of failure, no re-navigation needed.</li>
+      <li>Re-locate the element by the old locator's <em>purpose</em>, not its literal string — preferring a new stable identifier, then role + accessible name, then label/placeholder text, then visible text — never downgrading to a bare positional selector.</li>
+      <li>Judge confidence, then act.</li>
+    </ol>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Confidence</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>High — one unambiguous match</td><td>Apply, re-run to confirm, log it</td></tr>
+          <tr><td>Medium — text/label or position-disambiguated match</td><td>Apply, re-run to confirm, log it, flag for a human glance</td></tr>
+          <tr><td>Low — multiple candidates or nothing serves the same purpose</td><td>Apply nothing — cross-check <code>app-domain</code>; this may be an app bug, not selector rot</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel warn">
+      <span class="label">No silent fixes</span>
+      Every applied fix — High or Medium — gets one row in <code>docs/healing-log.md</code> (spec/PO, old locator, new locator, confidence, reason). A bad auto-heal needs to be traceable, not discovered by accident. Low confidence never auto-applies, on purpose.
+    </div>
+    <p><code>heal-test</code> is also callable standalone (<code>/heal-test &lt;spec&gt;</code>) against a previously-passing spec that starts failing later, independent of the authoring pipeline — the maintenance use case, not just the authoring-time one.</p>
+  </section>
+
+  <section class="sheet" id="s6">
+    <div class="sheet-head"><h2>Model &amp; token levers</h2><span class="stamp">SHEET 06/11</span></div>
+    <p class="dek">The rule of thumb: downgrade scope before downgrading model.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>Work</th><th>Model</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Triage</td><td>Template-fill a TC block, one-line layer call, grep for reuse</td><td>inline — no separate call</td></tr>
+          <tr><td>2 · Build</td><td>Selector verification, codegen, real-browser debugging</td><td><strong>default</strong> — never downgrade</td></tr>
+          <tr><td>3 · Review</td><td>Checklist match, scoped to the new file</td><td>default; <code>--fast</code> opts into a cheaper model</td></tr>
+          <tr><td>4 · Fix</td><td>Same as Build</td><td>default</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel warn">
+      <span class="label">Why model downgrade is opt-in, not default</span>
+      Scoping review to one file instead of the whole suite is a safe, large token cut. Scoping the <em>model</em> down risks missing the exact issue the review exists to catch — so that stays a flag the user reaches for, not a silent default.
+    </div>
+
+    <div class="lever-grid">
+      <div class="lever"><b>Subagent-per-stage isolation</b><span>Steps 2–3 — see Sheet 03</span></div>
+      <div class="lever"><b>Inline fast-path triage</b><span>Skip a full scenario/strategy skill run for one scenario</span></div>
+      <div class="lever"><b>Grep, never full-folder read</b><span>Reuse-check across specs &amp; page objects</span></div>
+      <div class="lever"><b>One example file to mirror</b><span>Not "read every existing spec"</span></div>
+      <div class="lever"><b>Structural determinism</b><span>Copy the known-good skeleton, vary only specifics</span></div>
+      <div class="lever"><b>One MCP snapshot per page</b><span>Not one per action — see Sheet 07</span></div>
+      <div class="lever"><b>Review scoped to the new file</b><span>Not the whole suite</span></div>
+      <div class="lever"><b>Model downgrade is opt-in</b><span>A flag, never a silent default</span></div>
+    </div>
+  </section>
+
+  <section class="sheet" id="s7">
+    <div class="sheet-head"><h2>MCP wiring</h2><span class="stamp">SHEET 07/11</span></div>
+    <p class="dek"><code>.vscode/mcp.json</code> only talks to VS Code's own MCP client. Claude Code needed its own registration.</p>
+    <pre class="code">{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"playwright"</span>: {
+      <span class="k">"command"</span>: "npx",
+      <span class="k">"args"</span>: ["@playwright/mcp@latest", "--headed"]
+    }
+  }
+}
+<span class="c">// .mcp.json — project root, git-shareable</span></pre>
+    <p>First use in a new terminal approves this project's MCP server once. Drop <code>--headed</code> for unattended/CI runs.</p>
+    <div class="panel">
+      <span class="label">MCP discipline</span>
+      One snapshot per page to build the selector map, verify only the elements this scenario touches, then write the Page Object from that. Re-snapshotting the full accessibility tree after every single action is the most common way an MCP-driven build burns tokens for no benefit.
+    </div>
+  </section>
+
+  <section class="sheet" id="s8">
+    <div class="sheet-head"><h2>One-shot vs manual</h2><span class="stamp">SHEET 08/11</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Need</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>One scenario in, one passing spec out</td><td><code>/ship-test &lt;scenario&gt;</code> — or just paste the scenario</td></tr>
+          <tr><td>Scenarios for a whole feature/app</td><td><code>/create-scenarios</code> (batch)</td></tr>
+          <tr><td>Re-run strategy across many scenarios</td><td><code>/test-strategy</code></td></tr>
+          <tr><td>Audit the whole existing suite</td><td><code>/review-tests</code> with no argument</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Both paths write to the same files, so they mix freely — batch-generate scenarios for a feature with <code>/create-scenarios</code>, then ship them one at a time with <code>/ship-test TC-014</code>.</p>
+  </section>
+
+  <section class="sheet" id="s9">
+    <div class="sheet-head"><h2>Bootstrapping a new project</h2><span class="stamp">SHEET 09/11</span></div>
+    <p class="dek">Everything on Sheets 01–08 is inert until this is done — nothing in the repo points at an app until you point it.</p>
+    <ol>
+      <li>Copy <code>.env.example</code> → <code>.env</code>, set <code>BASE_URL</code> (+ <code>APP_USER</code>/<code>APP_PASSWORD</code> if the app has a login).</li>
+      <li>Fill in every section of <code>.claude/skills/app-domain/SKILL.md</code> — app overview, user flows, business rules, data models. Every skill in Sheet 04 reads this file first; the guard rail on Sheet 02 checks it's no longer empty.</li>
+      <li>Login flow → adapt the selectors already marked for editing in <code>loginLogout.ts</code> and <code>auth/example.setup.ts</code>. No login → delete the <code>auth/</code> setup pair and its project entry in <code>playwright.config.ts</code>.</li>
+      <li>Replace <code>home-po.ts</code> and <code>example.spec.ts</code> with your first real page/spec, or keep them as the smoke-test baseline.</li>
+      <li>Run <code>/ship-test &lt;a scenario describing the app's first flow&gt;</code> and let the pipeline (Sheet 02) take it from there.</li>
+    </ol>
+    <p>The same checklist lives in <code>CLAUDE.md</code>, which Claude Code reads automatically at session start — this copy is here so this document stays self-contained.</p>
+  </section>
+
+  <section class="sheet" id="s10">
+    <div class="sheet-head"><h2>CI &amp; failure triage</h2><span class="stamp">SHEET 10/11</span></div>
+    <p class="dek">Everything through Sheet 09 runs when a human types a command. This is what runs on its own — three layers, none a hard dependency on the ones above.</p>
+
+    <pre class="diagram">pull_request  ─┬─▶ test (windows-latest, smoke)     ─┬─▶ review           (changed specs → PR comment, AI, optional)
+               │                                      │
+schedule/manual┴─▶ test (windows-latest, regression) ─┼─▶ triage-baseline  (evidence → PR comment / tracked issue, no AI)
+                                                       └─▶ triage           (enriches triage-baseline's post, AI, optional)</pre>
+
+    <ul>
+      <li><strong>test</strong> is deterministic — <code>npm run pw:test[:smoke]</code>, nothing AI about it, runs regardless of secrets. Runs on <code>windows-latest</code> on purpose: the logging path (<code>C:\LogFolder\...</code>) and Allure teardown are Windows-specific by design (Sheet 07) — this matches local dev rather than working around it.</li>
+      <li><strong>triage-baseline</strong> runs whenever <code>test</code> fails, needs no AI vendor, and posts the raw evidence — failing test names, an <code>out.txt</code> excerpt, links to the uploaded artifacts — as a PR comment, or (for a nightly run with no PR to comment on) a tracked GitHub issue reused across nights. This is the value floor: CI produces a real signal with <strong>no AI vendor configured anywhere</strong>.</li>
+      <li><strong>review</strong> (optional, AI) runs <code>review-tests</code> against exactly the spec/PO files changed in the PR — the same file-scoping discipline as Sheet 08 — and posts the result as a PR comment.</li>
+      <li><strong>triage</strong> (optional, AI) runs only when <code>test</code> fails, downloads that run's Allure results and raw traces, and hands them to <code>triage-failure</code>, which classifies the failure — selector rot → <code>heal-test</code>, test bug → <code>generate-tests</code>, app bug → filed and left untouched, flake → flagged, never silently dismissed — then appends its verdict to whatever <strong>triage-baseline</strong> already posted, rather than starting a second conversation.</li>
+    </ul>
+
+    <div class="panel warn">
+      <span class="label">Never a silent gate</span>
+      Both AI jobs need <code>ANTHROPIC_API_KEY</code> as a repo secret and are gated on it being present — missing it skips them cleanly rather than failing the build, and <code>triage-baseline</code> has already posted something useful either way. Both also run the Claude Code invocation itself with <code>continue-on-error: true</code>: an AI job that fails to run is a missed comment, never a red PR check by itself. The same "CI auto-comments, it doesn't auto-merge" guardrail from <code>docs/roadmap.md</code> applies at the workflow level, not just in the skill instructions.
+    </div>
+  </section>
+
+  <section class="sheet" id="s11">
+    <div class="sheet-head"><h2>Driving from Copilot</h2><span class="stamp">SHEET 11/11</span></div>
+    <p class="dek">Nothing through Sheet 10 requires Claude Code specifically except the <code>.claude/skills/*</code> file format and the two <code>claude -p</code> calls in CI. This is what makes that explicit for a second driver.</p>
+
+    <p><strong>One process, two drivers.</strong> The two knowledge files (<code>app-domain</code>, <code>playwright-best-practices</code>) and the seven pipeline-stage process definitions stay exactly where they are, in <code>.claude/skills/*/SKILL.md</code> — that's Claude Code's own auto-discovery folder, so moving them would break its pipeline for no benefit. Every Copilot-facing file added for this is a <strong>thin pointer</strong> at those same definitions, not a rewrite:</p>
+
+    <pre class="diagram">.github/copilot-instructions.md          →  repo-wide, mirrors CLAUDE.md
+.github/instructions/*.instructions.md   →  path-scoped conventions (specs, page objects)
+.github/prompts/&lt;name&gt;.prompt.md  ──────▶  "Follow .claude/skills/&lt;name&gt;/SKILL.md" + Copilot-specific mechanics</pre>
+
+    <p>One <code>*.prompt.md</code> per pipeline stage, invoked as <code>/name</code> in Copilot Chat's Agent mode — same commands, same file outputs, same conventions as the Claude Code skills they point at. Edit the process once, in <code>.claude/skills/</code>, and both tools follow the update; a prompt file that duplicated the content instead would drift the moment either copy got edited without the other.</p>
+
+    <p>Real-browser verification works from either driver because it was already wired for both: <code>.mcp.json</code> registers Playwright MCP for Claude Code, <code>.vscode/mcp.json</code> registers the same server for VS Code's own MCP client — Copilot's Agent mode already had tool access before any file in this section existed.</p>
+
+    <div class="panel warn">
+      <span class="label">Where the parity isn't perfect</span>
+      <code>ship-test</code>'s Build and Review steps run as isolated Claude Code subagents for the context-isolation reasons in Sheet 03 — that mechanism has no direct Copilot equivalent as of this writing. Driven from Copilot, the same five steps run sequentially in one chat instead; the process and file outputs are identical, the token-isolation benefit just doesn't apply to that path yet.
+    </div>
+
+    <p>GitHub's Copilot coding agent (assign-to-<code>@copilot</code> on an issue) is a real option for picking up the issue <code>triage-baseline</code> files on a nightly failure — but it's issue-driven and asynchronous, not a scriptable "run this step in this job" call the way <code>claude -p</code> is, so it's a manual assignment, not automated in the workflow.</p>
+  </section>
+
+</div>
+
+<div class="footer">PlayWrightAI — docs/architecture.md holds the durable copy of this drawing set.</div>

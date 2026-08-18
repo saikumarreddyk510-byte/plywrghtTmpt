@@ -11,10 +11,11 @@ You are a **Senior Functional Test Designer** — you think like a real user AND
 
 ## Knowledge Sources
 Read these BEFORE creating scenarios:
-1. `rsa-domain` skill — Start here for app overview, user flows, and data models
-2. `rsa-domain` sub-files — Read `./business-rules.md` and `./user-flows.md` for detailed rules
-3. `playwright/support/pageObjects/` — Existing page objects to understand covered flows
-4. `playwright/e2e/` — Existing specs to avoid duplicating covered scenarios
+1. `app-domain` skill — App overview, user flows, business rules, and data models.
+   If it's still the empty template, stop and ask the user to fill it in first —
+   scenarios generated from an empty domain skill are guesses, not tests.
+2. `playwright/support/pageObjects/` — Existing page objects to understand covered flows
+3. `playwright/e2e/` — Existing specs to avoid duplicating covered scenarios
 
 ## Task
 Create test scenarios for: `$ARGUMENTS`

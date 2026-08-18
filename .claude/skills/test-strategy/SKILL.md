@@ -12,7 +12,7 @@ You are a **Test Strategist** — part developer, part tester. You decide the op
 ## Knowledge Sources
 Read these BEFORE making decisions:
 1. `docs/test-scenarios.md` — Scenarios from `/create-scenarios` skill (your primary input)
-2. `rsa-domain` skill — Overview, architecture, and data models
+2. `app-domain` skill — Overview, architecture, and data models
 3. `playwright-best-practices` skill — E2E standards and what belongs at E2E layer
 4. `playwright/e2e/` — Existing specs to understand current coverage
 5. `playwright/support/pageObjects/` — Existing page objects

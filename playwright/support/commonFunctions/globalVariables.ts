@@ -30,7 +30,7 @@ export const globalVariables = {
 
   // ─── Feature flags ────────────────────────────────────────────────────────
   isValidationOn: true,
-  isBookingDataGeneration: false,
+  isTestDataGeneration: false,
 
   // ─── Playwright page handle (set in beforeEach via setPage()) ─────────────
   page: undefined as unknown as Page,
@@ -59,6 +59,6 @@ export function resetGlobalVariables(): void {
   globalVariables.scenario = "";
   globalVariables.scenarioDescription = "";
   globalVariables.isValidationOn = true;
-  globalVariables.isBookingDataGeneration = false;
+  globalVariables.isTestDataGeneration = false;
   globalVariables.runtimeData = {};
 }

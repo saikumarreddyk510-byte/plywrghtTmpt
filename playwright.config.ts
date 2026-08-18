@@ -12,6 +12,9 @@ import { allureResultsDir } from "./playwright/support/allureRunContext";
  *   - Allure isolated per-run results dir
  *   - LogFileReporter → C:\LogFolder\<specName>_<ts>_<runId>\out.txt
  *   - globalTeardown generates the Allure HTML report
+ *   - trace: retain-on-failure — gives the `heal-test` skill (and CI failure
+ *     triage later) the exact DOM at the moment of failure without having to
+ *     re-navigate the live app to reproduce it
  *
  * Add a project block per authenticated slice following the
  * <slice>-setup / <slice> pattern. Auth storageState files live in
@@ -36,7 +39,7 @@ export default defineConfig({
     bypassCSP: true,
     screenshot: "only-on-failure",
     video: "off",
-    trace: "off",
+    trace: "retain-on-failure",
   },
   projects: [
     // ─── Unauthenticated project ───────────────────────────────────────────
@@ -51,17 +54,8 @@ export default defineConfig({
       },
     },
 
-    // ─── Shopping Cart tests ──────────────────────────────────────────────
-    {
-      name: "shopping-cart",
-      testMatch: /shoppingCart\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        channel: "chrome",
-        launchOptions: { args: ["--disable-web-security"] },
-      },
-    },
-    // Duplicate this pair for each slice that needs its own session.
+    // Duplicate the block above for each new unauthenticated spec group, and
+    // the commented pair below for each slice that needs its own login session.
     //
     // {
     //   name: "my-slice-setup",

@@ -49,7 +49,7 @@ page.getByPlaceholder("email@example.com")
 ```typescript
 page.locator("button:has-text('Add')")
 page.locator("a:has-text('Checkout')")
-page.locator("td:has-text('iphone X')")
+page.locator("td:has-text('Product Name')")
 ```
 
 ### Priority 5: CSS Classes (Last Resort)
@@ -197,7 +197,24 @@ await page.waitForTimeout(2000); // ❌ arbitrary sleep
 
 ---
 
-## 9. Anti-Patterns to Avoid
+## 9. Self-Healing Policy
+
+When a locator stops matching the live app (see the `heal-test` skill), any
+proposed fix must still obey the priority order in §2 — a heal relocates the
+element, it never downgrades locator quality (e.g. never "fixes" a role-based
+locator by replacing it with a bare `nth()`).
+
+| Confidence | Rule |
+|---|---|
+| High (unambiguous role + purpose match) | Apply, re-run to confirm, log to `docs/healing-log.md` |
+| Medium (text/label match, or position-disambiguated) | Apply, re-run to confirm, log it, flag for human review |
+| Low (multiple candidates, or nothing serves the same purpose) | Never apply. Report it — it may be an app bug, not selector rot |
+
+No silent fixes: every applied heal gets a `docs/healing-log.md` row (date,
+file, old locator, new locator, confidence, reason) so a bad auto-fix is
+traceable, not discovered by accident.
+
+## 10. Anti-Patterns to Avoid
 
 | Anti-Pattern | Fix |
 |-------------|-----|
