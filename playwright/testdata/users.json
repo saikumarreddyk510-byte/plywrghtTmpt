@@ -12,5 +12,9 @@
   "loginUser": {
     "email": "saikumar@test.com",
     "password": "Test@1234"
+  },
+  "invalidUser": {
+    "email": "nonexistent-user-xyz@test.com",
+    "password": "WrongPass@123"
   }
 }

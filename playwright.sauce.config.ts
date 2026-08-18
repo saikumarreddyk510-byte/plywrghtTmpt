@@ -1,3 +1,4 @@
+import "dotenv/config"; // loads .env into process.env — must run before anything below reads it
 import { defineConfig, devices } from "@playwright/test";
 import { allureResultsDir } from "./playwright/support/allureRunContext";
 

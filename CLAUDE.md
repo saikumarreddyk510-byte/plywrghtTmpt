@@ -58,11 +58,11 @@ npm run format              # Prettier
 5. Run: `npx playwright test <spec>.spec.ts --headed --project=<name>`
 
 ## AI Authoring Pipeline (Claude Code)
-One scenario in, one passing spec out — see `docs/architecture.md` for the full
-design (or open `docs/architecture.html` in a browser for the diagram-first
-version). Driving this from VS Code + GitHub Copilot instead of Claude Code?
-Same pipeline, same files — see `.github/copilot-instructions.md` and
-`docs/architecture.md` §12.
+One scenario in, one passing spec out — see `docs/quickstart.md` for the exact
+steps to follow, or `docs/architecture.md` for the full design (open
+`docs/architecture.html` in a browser for the diagram-first version). Driving
+this from VS Code + GitHub Copilot instead of Claude Code? Same pipeline, same
+files — see `.github/copilot-instructions.md` and `docs/architecture.md` §12.
 
 - **One-shot**: `/ship-test <scenario>` (or just paste a scenario) — orchestrates
   everything below through isolated subagents, end to end.

@@ -1,38 +1,38 @@
 ---
 name: app-domain
-description: Domain knowledge for the application under test — app overview, user flows, business rules, data models, and UI selectors. Read this before creating scenarios, strategies, or tests. TEMPLATE — fill in every section below for your project before running /create-scenarios.
+description: Domain knowledge for the application under test — app overview, user flows, business rules, data models, and UI selectors. Read this before creating scenarios, strategies, or tests.
 user-invocable: false
 ---
 
 # App Domain Knowledge
 
-> **This is a template.** It ships empty on purpose — the AI pipeline
-> (`create-scenarios`, `test-strategy`, `generate-tests`, `review-tests`,
-> `ship-test`) reads this file first, every time, so its output is only as good
-> as what's filled in here. Replace every `<placeholder>` before shipping the
-> first real test. See `CLAUDE.md` → "Bootstrapping a New Project" for the full
-> setup checklist.
-
 ## App Overview
-`<One paragraph: what the app is, who its users are, what problem it solves.>`
+**rahulshettyacademy.com/client** — "Ecom" — a practice e-commerce app for QA
+automation training. Users register, log in, browse products on a dashboard,
+add to cart, and place orders. Angular SPA (hash routing, `#/...`).
 
-### Apps / Areas in Scope
-| Area | URL / Route | Purpose |
-|------|-------------|---------|
-| `<e.g. Login>` | `<path>` | `<what a user does here>` |
-| `<e.g. Dashboard>` | `<path>` | `<what a user does here>` |
+### Areas in Scope
+| Area | Route | Purpose |
+|------|-------|---------|
+| Login | `/client/#/auth/login` | Email + password sign-in |
+| Register | `/client/#/auth/register` | New account creation |
+| Dashboard | `/client/#/dashboard/dash` | Product browsing, add to cart |
 
 ---
 
 ## Data Models
 
-`<One JSON-shaped block per core entity — the shape your forms submit and your
-API/UI returns. This is what test data generation and assertions key off.>`
-
 ```json
 {
-  "<entityName>": {
-    "<field>": "<type / example value>"
+  "user": {
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string (unique)",
+    "phone": "string (10 digits)",
+    "occupation": "Doctor | Student | Engineer | Scientist",
+    "gender": "Male | Female",
+    "password": "string (min 8 chars)",
+    "age18Plus": "boolean (must be checked to enable Register)"
   }
 }
 ```
@@ -41,40 +41,44 @@ API/UI returns. This is what test data generation and assertions key off.>`
 
 ## User Flows
 
-`<One flow per numbered journey. Be specific about routes and the exact
-observable outcome — these are what create-scenarios turns into TC-### blocks
-and what generate-tests turns into spec steps.>`
+### Flow 1: Login
+1. Navigate to `/client/#/auth/login`
+2. Fill Email (`#userEmail`) + Password (`#userPassword`)
+3. Click the submit input (`#login`)
+4. **Valid credentials** → redirected to `/client/#/dashboard/dash`
+5. **Invalid credentials** → stays on `/client/#/auth/login`, a `.toast-message`
+   reading "Incorrect email or password." appears
 
-### Flow 1: `<name, e.g. "Register">`
-1. Navigate to `<route>`
-2. `<step>`
-3. `<step>` → `<expected outcome>`
+Verified live via headless Playwright on 2026-08-18: `#userEmail`/`#userPassword`/`#login`
+are real, current element IDs; the toast text is exact (leading/trailing space
+included, matches the live app).
 
-### Flow 2: `<name, e.g. "Login">`
-1. Navigate to `<route>`
-2. `<step>` → `<expected outcome>`
+### Flow 2: Register
+1. Navigate to `/client/#/auth/register`
+2. Fill: First Name, Last Name, Email, Phone
+3. Select Occupation (dropdown — default disabled option "Choose your occupation")
+4. Select Gender (radio)
+5. Fill Password + Confirm Password
+6. Check "I am 18 year or Older"
+7. Click Register → "Account Created Successfully" message
 
 ---
 
 ## Business Rules
 
-`<Every rule a test might assert against. Group by flow/feature. This is the
-section review-tests cross-references assertions against — an assertion that
-can't be traced to a rule here is a signal the test may be checking the wrong
-thing.>`
+### Login
+- Wrong credentials → toast error, no navigation away from the login page
+- Correct credentials → redirect to dashboard
+- Dashboard shows products with Add To Cart buttons
 
-### `<Feature> Rules`
-- `<rule>`
-- `<rule>`
+### Registration
+- Email must be unique — duplicate email = error
+- All fields mandatory — empty submit shows validation
+- Password and Confirm Password must match
+- Age checkbox must be checked to enable the Register button
 
 ---
 
 ## Test Data Location
-All credentials and test inputs: `playwright/testdata/*.json`
-
-```json
-{
-  "validUser": { "...": "..." },
-  "loginUser": { "email": "...", "password": "..." }
-}
-```
+`playwright/testdata/users.json` — `loginUser` holds a real, working account on
+this app (verified live): `saikumar@test.com` / `Test@1234` → successful login.

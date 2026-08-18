@@ -1,3 +1,4 @@
+import "dotenv/config"; // loads .env into process.env — must run before anything below reads it
 import { defineConfig, devices } from "@playwright/test";
 import { allureResultsDir } from "./playwright/support/allureRunContext";
 
@@ -47,6 +48,17 @@ export default defineConfig({
       // Runs specs that do not require a login (public pages, API smoke checks).
       name: "chromium",
       testMatch: /example\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        launchOptions: { args: ["--disable-web-security"] },
+      },
+    },
+
+    // ─── Client App login tests ─────────────────────────────────────────────
+    {
+      name: "client-login",
+      testMatch: /clientLogin\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",
