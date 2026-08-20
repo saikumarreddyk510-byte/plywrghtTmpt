@@ -11,7 +11,7 @@ against it are guesses, not tests), before doing anything else.
 
 Copilot-specific mechanics: none beyond the above — this step is pure
 reading/writing, no browser or MCP tool needed. Output goes to
-`docs/test-scenarios.md`, same as the Claude Code pipeline.
+`docs/pipeline/test-scenarios.md`, same as the Claude Code pipeline.
 
 Feature/flow to generate scenarios for (blank = full application):
 ${input:task}

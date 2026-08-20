@@ -21,5 +21,5 @@ Copilot-specific mechanics:
   registered in `.vscode/mcp.json`.
 
 Scenario (plain English), a TC-ID, or blank for the next unimplemented TC in
-`docs/test-scenarios.md`:
+`docs/pipeline/test-scenarios.md`:
 ${input:task}

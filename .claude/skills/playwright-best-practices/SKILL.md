@@ -1,6 +1,6 @@
 ---
 name: playwright-best-practices
-description: Playwright TypeScript test automation standards for PlayWrightAI project — locator strategy, assertion patterns, POM conventions, wait strategies, logging, and anti-patterns. Referenced by generate-tests and review-tests agents.
+description: Playwright TypeScript coding standard for this framework — locator priority, assertion patterns, Page Object conventions, wait strategies, logging, the self-healing policy, and the anti-patterns that get flagged in review. Use whenever writing, healing, or reviewing a spec or Page Object; it is the checklist review-tests scores against.
 user-invocable: false
 ---
 
@@ -206,11 +206,11 @@ locator by replacing it with a bare `nth()`).
 
 | Confidence | Rule |
 |---|---|
-| High (unambiguous role + purpose match) | Apply, re-run to confirm, log to `docs/healing-log.md` |
+| High (unambiguous role + purpose match) | Apply, re-run to confirm, log to `docs/reports/healing-log.md` |
 | Medium (text/label match, or position-disambiguated) | Apply, re-run to confirm, log it, flag for human review |
 | Low (multiple candidates, or nothing serves the same purpose) | Never apply. Report it — it may be an app bug, not selector rot |
 
-No silent fixes: every applied heal gets a `docs/healing-log.md` row (date,
+No silent fixes: every applied heal gets a `docs/reports/healing-log.md` row (date,
 file, old locator, new locator, confidence, reason) so a bad auto-fix is
 traceable, not discovered by accident.
 

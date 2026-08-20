@@ -11,6 +11,11 @@ You are diagnosing a **failed run**, not writing new tests. Your job is to say
 *why* it failed, with evidence, and either fix it safely or hand it to a human
 with enough context that they don't have to re-investigate from scratch.
 
+## Input
+
+`$ARGUMENTS` — a spec file or evidence directory. Blank means the most
+recent failed run.
+
 ## Knowledge Sources
 1. `app-domain` skill — the documented behavior to check the app against.
 2. `heal-test` skill — the procedure to delegate locator-class failures to.
@@ -75,7 +80,7 @@ One report, whether posted to a PR, a CI job summary, or printed locally:
 
 | Test | Classification | Confidence | Action | Evidence |
 |------|----------------|------------|--------|----------|
-| TC01 - ... | Selector rot | High | Healed (see docs/healing-log.md) | trace.zip |
+| TC01 - ... | Selector rot | High | Healed (see docs/reports/healing-log.md) | trace.zip |
 | TC02 - ... | App bug | — | Filed below, test untouched | screenshot-2.png |
 
 **App bug detail (TC02):** <flow> — app-domain says <expected>, app currently
@@ -86,3 +91,35 @@ Guardrail: never auto-close anything as "flake" without the evidence line next
 to it. A flake label with no evidence is exactly the failure mode that erodes
 trust in a test suite — see `docs/roadmap.md`'s "What stays human-gated"
 section.
+
+## Guardrails
+
+- **Never force a classification.** If a failure fits no row in the table, say
+  "unclear, here is what I checked". A confident wrong verdict costs more than
+  an honest open question.
+- **Never label a failure a flake without evidence beside it.** A flake label
+  with no pass-rate citation is exactly the habit that erodes trust in a suite.
+- **App bugs leave the test untouched.** Do not adapt an assertion to match new
+  behaviour that contradicts `app-domain`.
+- **Never reach green by seeing less** — no added sleeps, no relaxed
+  assertions, no skips on a genuinely failing test.
+- **Triage stale evidence before running anything.** `test-results/` is
+  overwritten by the next run; re-running first destroys what you came to read.
+
+## Done means
+
+- Every failing test has a classification, a confidence, an action, and an
+  evidence path.
+- Locator-class failures went through `heal-test`'s tiers, and its outcome is
+  reported as this triage's outcome.
+- App bugs are written up with expected (quoting `app-domain`), actual, and the
+  rule contradicted.
+- Anything unclear is reported as unclear, with what you checked.
+
+## When *not* to use this skill
+
+- The suite is green. There is nothing to triage.
+- You already know it is selector rot → `/heal-test` directly.
+- The test flips between pass and fail across runs → `/detect-flaky`, which has
+  the history this skill does not read.
+- You want the whole loop — run, triage, fix, prove, report → `/autopilot`.

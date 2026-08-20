@@ -21,7 +21,7 @@ Copilot-driven version of this same pipeline
 `.claude/skills/playwright-best-practices/SKILL.md` and
 `.claude/skills/app-domain/SKILL.md`, before reviewing anything.
 
-If the file under review appears in `docs/healing-log.md`, also apply the
+If the file under review appears in `docs/reports/healing-log.md`, also apply the
 Self-Healing checklist items from `playwright-best-practices` §9 — a healed
 locator must still respect the priority order there.
 
@@ -32,6 +32,6 @@ cheap (`docs/architecture.md` §8): a targeted review costs a fraction of a
 full-suite one.
 
 ## Output
-Write `docs/review-report.md` (your one legitimate `Write`). Report back to
+Write `docs/reports/review-report.md` (your one legitimate `Write`). Report back to
 whoever spawned you only the score and any `[CRITICAL]`/`[IMPORTANT]`
 findings — not the full report inline, it's already on disk.

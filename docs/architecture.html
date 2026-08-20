@@ -314,10 +314,10 @@
         <tbody>
           <tr><td><code>app-domain</code></td><td>never directly</td><td>—</td><td>— (ships empty; fill in per project, Sheet 09)</td></tr>
           <tr><td><code>playwright-best-practices</code></td><td>never directly</td><td>—</td><td>— (reference only)</td></tr>
-          <tr><td><code>create-scenarios</code></td><td><code>/create-scenarios [feature]</code></td><td>domain, existing specs</td><td><code>docs/test-scenarios.md</code></td></tr>
-          <tr><td><code>test-strategy</code></td><td><code>/test-strategy [feature]</code></td><td>scenarios doc, domain</td><td><code>docs/test-strategy.md</code></td></tr>
+          <tr><td><code>create-scenarios</code></td><td><code>/create-scenarios [feature]</code></td><td>domain, existing specs</td><td><code>docs/pipeline/test-scenarios.md</code></td></tr>
+          <tr><td><code>test-strategy</code></td><td><code>/test-strategy [feature]</code></td><td>scenarios doc, domain</td><td><code>docs/pipeline/test-strategy.md</code></td></tr>
           <tr><td><code>generate-tests</code></td><td><code>/generate-tests [flow]</code></td><td>best-practices, domain, strategy doc, MCP</td><td>spec + PO + config entry</td></tr>
-          <tr><td><code>review-tests</code></td><td><code>/review-tests [file]</code></td><td>best-practices, spec(s)</td><td><code>docs/review-report.md</code></td></tr>
+          <tr><td><code>review-tests</code></td><td><code>/review-tests [file]</code></td><td>best-practices, spec(s)</td><td><code>docs/reports/review-report.md</code></td></tr>
           <tr><td><strong><code>ship-test</code></strong></td><td><strong><code>/ship-test &lt;scenario&gt;</code></strong>, or just paste one</td><td>orchestrates all four above, via subagents</td><td>everything above, end to end</td></tr>
         </tbody>
       </table>
@@ -347,7 +347,7 @@
     </div>
     <div class="panel warn">
       <span class="label">No silent fixes</span>
-      Every applied fix — High or Medium — gets one row in <code>docs/healing-log.md</code> (spec/PO, old locator, new locator, confidence, reason). A bad auto-heal needs to be traceable, not discovered by accident. Low confidence never auto-applies, on purpose.
+      Every applied fix — High or Medium — gets one row in <code>docs/reports/healing-log.md</code> (spec/PO, old locator, new locator, confidence, reason). A bad auto-heal needs to be traceable, not discovered by accident. Low confidence never auto-applies, on purpose.
     </div>
     <p><code>heal-test</code> is also callable standalone (<code>/heal-test &lt;spec&gt;</code>) against a previously-passing spec that starts failing later, independent of the authoring pipeline — the maintenance use case, not just the authoring-time one.</p>
   </section>

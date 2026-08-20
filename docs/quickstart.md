@@ -44,11 +44,11 @@ Skip this if you're continuing to test the Client app — that's already done.
    score. Done.
 
 **Step by step (more control over each stage):**
-1. `/create-scenarios <feature>` → writes/updates `docs/test-scenarios.md`
-2. `/test-strategy <feature>` → writes/updates `docs/test-strategy.md`
+1. `/create-scenarios <feature>` → writes/updates `docs/pipeline/test-scenarios.md`
+2. `/test-strategy <feature>` → writes/updates `docs/pipeline/test-strategy.md`
 3. `/generate-tests <feature>` → writes the Page Object + spec, verifies
    selectors against the real app, runs it, debugs until it passes
-4. `/review-tests <the new spec file>` → writes `docs/review-report.md`
+4. `/review-tests <the new spec file>` → writes `docs/reports/review-report.md`
 
 Both paths write the same files — you can start with `/create-scenarios` for
 a whole feature, then `/ship-test TC-014` to implement one scenario from it
@@ -67,12 +67,22 @@ npm run pw:test:smoke                    # smoke only
 npx playwright test --project=<name>     # one project, e.g. client-login
 npx playwright test <spec>.spec.ts --headed   # watch it in a real browser
 npm run report:open                      # last Allure HTML report
+npm run pw:test:api                      # API-layer specs only
+npm run pw:test:a11y                     # accessibility audit
+npm run history:analyze                  # stability stats across recent runs
 ```
 
 ## 5. When something breaks later
 
+- **Just want it handled?** → `/autopilot` — runs the suite, triages every
+  failure, heals selector rot, fixes test bugs, re-runs to prove the fix, and
+  writes `docs/reports/run-report.md`. It never reaches green by weakening a test, and
+  it files app bugs to `docs/reports/app-bugs.md` instead of absorbing them.
 - Selector stopped matching after an app change → `/heal-test [spec]`
 - A run went red and you don't know why → `/triage-failure [spec]`
+- "It fails randomly" → `/detect-flaky` — it reads the run history, so it can
+  tell a genuinely flaky test from one that has simply been failing all week
+- Someone non-technical needs the state of the suite → `/run-report`
 - Neither fixes it silently — both log/report what they found and only
   auto-apply a fix above a confidence threshold. See `docs/architecture.md`
   §4 and §11.
@@ -84,3 +94,22 @@ evidence as a PR comment with no AI required; if `ANTHROPIC_API_KEY` is set,
 an AI diagnosis gets appended to the same comment. Nightly, the full
 regression runs the same way against a tracked issue instead of a PR.
 Details: `docs/architecture.md` §11.
+
+## 7. Going beyond E2E
+
+The pyramid `test-strategy` has always described is now implemented, not just
+documented:
+
+```
+/explore-app              # bootstrap or refresh app-domain from the live app
+/generate-api-tests       # the API/Integration rows in docs/pipeline/test-strategy.md
+/generate-testdata        # boundary + adversarial data for the Security lens
+/audit-a11y               # accessibility, prioritised by real user impact
+```
+
+Rules of thumb:
+- If a rule can be checked without a browser, it belongs at API — push it down.
+- Fuzz and boundary suites are regression-tier; keep them out of smoke so the
+  PR gate stays fast.
+- `/explore-app` and `/audit-a11y` both find **app** problems, not test
+  problems. Those go to the app team (`docs/reports/app-bugs.md`), not the test backlog.

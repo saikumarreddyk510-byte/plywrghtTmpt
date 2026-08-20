@@ -15,7 +15,7 @@ Copilot-specific mechanics:
   `test-results/` — `trace: "retain-on-failure"` is set in
   `playwright.config.ts`).
 - Every High/Medium-confidence fix still gets a row in
-  `docs/healing-log.md`, same file and format as the Claude Code pipeline —
+  `docs/reports/healing-log.md`, same file and format as the Claude Code pipeline —
   don't start a second log.
 
 Spec to heal (blank = the most recently failed run):

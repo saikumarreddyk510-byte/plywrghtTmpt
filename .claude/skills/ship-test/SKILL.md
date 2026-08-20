@@ -1,7 +1,7 @@
 ---
 name: ship-test
 description: Turn one plain-English test scenario into a fully implemented, passing Playwright spec — the single-prompt entry point for this framework. Chains scenario capture, layer classification, real-browser (MCP) implementation, and a scoped code review through isolated subagents with tiered models, so cost and latency stay low even after many runs in the same session. Use whenever the user describes a user flow to automate, says "add a test for X", pastes a TC-ID, or asks to turn a scenario into a spec.
-argument-hint: [scenario description, or a TC-ID from docs/test-scenarios.md, or blank for the next unimplemented TC]
+argument-hint: [scenario description, or a TC-ID from docs/pipeline/test-scenarios.md, or blank for the next unimplemented TC]
 ---
 
 # Ship Test — One Prompt → One Passing Spec
@@ -20,8 +20,8 @@ cheap.
 ## Step 0 — Resolve the input (inline, no subagent)
 
 - Scenario text given → this is the scenario.
-- `TC-###` given → look it up in `docs/test-scenarios.md`.
-- Blank → read `docs/test-scenarios.md`, pick the first TC-ID with no matching
+- `TC-###` given → look it up in `docs/pipeline/test-scenarios.md`.
+- Blank → read `docs/pipeline/test-scenarios.md`, pick the first TC-ID with no matching
   spec under `playwright/e2e/` (grep TC-IDs across specs first — don't open every
   file).
 - Scenario doesn't describe a browser-observable user flow (it's a pure function,
@@ -32,12 +32,12 @@ cheap.
 
 1. **Formalize, don't re-derive.** If the input isn't already a `TC-###` block,
    write one directly using the template in the `create-scenarios` skill and
-   append it to `docs/test-scenarios.md`. Don't run a full scenario sweep for one
+   append it to `docs/pipeline/test-scenarios.md`. Don't run a full scenario sweep for one
    flow — that skill's "6 lenses / full suite" mode is for batch generation only.
 2. **Classify the layer yourself**, using the Decision Rules from the
    `test-strategy` skill, in one line of reasoning. This pipeline only ships
    Playwright E2E, so the answer is E2E almost every time — confirm it, append one
-   row to `docs/test-strategy.md`, and move on. Only invoke the full
+   row to `docs/pipeline/test-strategy.md`, and move on. Only invoke the full
    `test-strategy` skill as a subagent if the scenario is genuinely ambiguous
    across layers.
 3. **Check for reuse** with `Grep`/`Glob` only (never a full read of every file):
@@ -87,6 +87,27 @@ Tell the user, in under 10 lines:
 - Review score and any remaining non-critical issues.
 - Any app bugs discovered (don't silently paper over a real bug with a workaround
   in the test).
+
+## Guardrails
+
+- **Never do Steps 2–3 inline.** Every read of `app-domain`,
+  `playwright-best-practices`, or existing spec files happens inside a
+  subagent. That is the whole cost model: this orchestrator stays cheap so the
+  tenth `/ship-test` in a session costs what the first did.
+- **At most one fix cycle.** If `[CRITICAL]` issues survive it, report them
+  rather than looping.
+- **Never report a pass the build subagent did not actually observe.** Relay
+  its real result, including red.
+- **App bugs are reported, never papered over** with a workaround in the test.
+- **No commits, no pushes.** You edit the working tree and report.
+
+## Done means
+
+- The TC exists in `docs/pipeline/test-scenarios.md` and has a strategy row.
+- The spec, Page Object, and config entry exist and the spec was run for real.
+- A scoped review ran against the new files, and any `[CRITICAL]` finding was
+  either fixed or reported as outstanding.
+- The final report is under 10 lines and states the real pass/fail.
 
 ## When *not* to use this skill
 

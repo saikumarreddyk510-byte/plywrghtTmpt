@@ -47,6 +47,26 @@ export class CommonFunctions {
   }
 
   /**
+   * Fails the test if any soft failure was recorded during it.
+   *
+   * `reportMessageFail`/`reportMessageError` only *log* and set
+   * `globalVariables.scriptFailed` — on their own they leave the test green,
+   * so a spec that logs [FAIL] and nothing else still passes. Call this at the
+   * end of a test (or in `afterEach`) to convert accumulated soft failures into
+   * a real failure:
+   *
+   *   test.afterEach(() => comFunc.assertNoSoftFailures());
+   */
+  assertNoSoftFailures(): void {
+    if (!globalVariables.scriptFailed) return;
+    const message = globalVariables.errorMessage || "A step reported a failure";
+    // Reset first so one test's failure can't leak into the next (state is shared).
+    globalVariables.scriptFailed = false;
+    globalVariables.errorMessage = "";
+    expect(false, `Soft failures recorded during this test: ${message}`).toBe(true);
+  }
+
+  /**
    * Asserts that the text content of a CSS-selector element equals expected.
    */
   async assertTextEquals(

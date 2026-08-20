@@ -55,5 +55,5 @@ that has a stable `id`).
 - No page parameter threading — use `globalVariables.page` via `this.page()`.
 - If this file was touched by `/heal-test`, the healed locator must still
   respect the priority order above and must have a matching row in
-  `docs/healing-log.md` — a heal relocates the element, it never downgrades
+  `docs/reports/healing-log.md` — a heal relocates the element, it never downgrades
   locator quality.

@@ -1,0 +1,3 @@
+# Run history is append-only — union-merge instead of conflicting on every
+# branch that happens to have run the suite.
+.test-history/runs.jsonl merge=union

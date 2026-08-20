@@ -20,18 +20,33 @@ reporting.
 ## Project Structure
 ```
 playwright/
-  e2e/              ← Test specs (*.spec.ts)
-  support/
-    pageObjects/    ← Page Object classes (*-po.ts)
-    commonFunctions/
-      globalVariables.ts  ← Shared state + BASE_URL + credentials
-      commonFunctions.ts  ← Logging helpers (reportMessage*)
-      loginLogout.ts      ← beforeEach setup helper
-    auth/           ← Auth storageState files (git-ignored)
-  testdata/         ← JSON input data (users.json, etc.)
-playwright.config.ts ← Projects config (one project per spec group)
-.env                ← Runtime secrets (BASE_URL, APP_USER, APP_PASSWORD)
+  e2e/              ← UI specs (*.spec.ts, *.a11y.spec.ts)
+  api/              ← API-layer specs (*.api.spec.ts)
+  testdata/         ← JSON fixtures the specs read (users.json, …)
+  support/          ← framework code, one folder per capability
+    auth/               storageState setup + paths (git-ignored output)
+    commonFunctions/    globalVariables · commonFunctions (comFunc) · loginLogout
+    pageObjects/        one class per page (*-po.ts)
+    api/apiClient.ts    HTTP calls with Page-Object-style logging
+    a11y/a11yAudit.ts   dependency-free accessibility scan
+    data/dataFactory.ts seeded realistic / boundary / adversarial values
+    reporting/          allureRunContext · logFileReporter · runHistoryReporter
+                        · analyzeHistory · globalTeardown
+docs/
+  README.md         ← index: what each document is, who writes it
+  architecture.md · quickstart.md · roadmap.md
+  pipeline/         ← working files skills read as input (scenarios, strategy)
+  reports/          ← generated output for humans (run-report, flaky-log, a11y/)
+  learning/         ← personal notes, not part of the framework
+playwright.config.ts ← projects: one per spec group, plus `api` and `a11y`
+.test-history/       ← append-only run history (flaky detection, trends)
+.env                 ← runtime secrets (BASE_URL, APP_USER, APP_PASSWORD)
 ```
+
+Two naming rules keep this from drifting back into a pile:
+- `support/` holds **capabilities, one folder per concern** — a new capability is
+  a new folder, never a loose file at the top of `support/`.
+- `support/data/` **generates** values; `playwright/testdata/` **stores** them.
 
 ## Conventions
 - Every spec imports `setPage` and calls it in `beforeEach`
@@ -67,6 +82,13 @@ Claude Code's slash commands:
 | `/heal-test` | `heal-test` | Repair a locator that stopped matching after an app change |
 | `/triage-failure` | `triage-failure` | Diagnose why a run went red before touching anything |
 | `/ship-test` | `ship-test` | One scenario in, one passing spec out, end to end |
+| `/explore-app` | `explore-app` | Crawl the live app and draft `app-domain` + scenarios (proposes, never overwrites) |
+| `/generate-api-tests` | `generate-api-tests` | Write the API/Integration tier `test-strategy` assigns |
+| `/generate-testdata` | `generate-testdata` | Seeded realistic / boundary / adversarial data for the Security and Edge Case lenses |
+| `/detect-flaky` | `detect-flaky` | Separate genuinely flaky tests from consistently-failing ones, using run history |
+| `/run-report` | `run-report` | Plain-English digest of the last run for a non-engineer audience |
+| `/audit-a11y` | `audit-a11y` | Accessibility sweep, prioritised by real user impact and mapped to WCAG |
+| `/autopilot` | `autopilot` | Run → triage → fix what is safely fixable → re-run → report, in one prompt |
 
 Real-browser verification (in `generate-tests`/`ship-test`/`heal-test`) uses
 the Playwright MCP server already registered in `.vscode/mcp.json` — the same
@@ -87,7 +109,10 @@ This repo is a template — no step below touches app-specific code until you do
 1. Copy `.env.example` → `.env`, set `BASE_URL` (+ `APP_USER`/`APP_PASSWORD` if
    the app has a login).
 2. Fill in every section of `.claude/skills/app-domain/SKILL.md` — app overview,
-   user flows, business rules, data models. This is the one file every prompt
+   user flows, business rules, data models. Run `/explore-app` first and it
+   drafts this from the live app into `docs/pipeline/domain-draft.md` for you to review
+   and merge — you confirm it, you no longer write it from scratch.
+   This is the one file every prompt
    above reads first.
 3. If the app has a login, adapt the selectors in
    `playwright/support/commonFunctions/loginLogout.ts` and

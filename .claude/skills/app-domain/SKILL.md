@@ -1,6 +1,6 @@
 ---
 name: app-domain
-description: Domain knowledge for the application under test — app overview, user flows, business rules, data models, and UI selectors. Read this before creating scenarios, strategies, or tests.
+description: Domain knowledge for the application under test — app overview, user flows, business rules, data models, and verified UI selectors. This is the single source of truth every other skill in the pipeline checks the app against. Use whenever a scenario, strategy, test, or triage verdict depends on what the app is supposed to do.
 user-invocable: false
 ---
 

@@ -154,6 +154,9 @@ You don't have to build any of this — it's already wired:
 
 ## 5. Project structure
 
+Three groups, and nothing else at the top level: **config** (how tests run),
+**`playwright/`** (what runs), **`docs/`** (what it all means).
+
 ```
 playwrightTemplate/
 ├── package.json                 Dependencies + npm scripts
@@ -161,76 +164,95 @@ playwrightTemplate/
 ├── eslint.config.mjs            Lint rules (+ Prettier)
 ├── .prettierrc                  Formatting rules
 ├── .env.example                 Template for your local .env (secrets)
-├── .gitignore                   Ignores node_modules, .auth, reports…
+├── .gitignore / .gitattributes  Ignore rules; union-merge for run history
 ├── playwright.config.ts         MAIN config (local runs)
 ├── playwright.sauce.config.ts   Cloud config (video/screenshots on)
 ├── run-sauce.ts                 Prepares Sauce artifact folder
-├── README.md                    ← YOU ARE HERE
-├── .sauce/
-│   └── config.yml               SauceLabs runner config + suites
-└── playwright/
-    ├── .auth/                   Saved login sessions (GIT-IGNORED)
-    ├── e2e/                     ← YOUR TEST FILES GO HERE
-    │   ├── example.spec.ts      Example smoke/regression test
-    │   └── README.spec.ts       In-code copy of this guide (no tests)
-    └── support/                 Framework helper code (not tests)
-        ├── allureRunContext.ts  Shared run id + folder names
-        ├── globalTeardown.ts    After-run: collect results + build report
-        ├── logFileReporter.ts   Saves console output to out.txt
-        ├── auth/
-        │   ├── authPaths.ts     Where session files are saved
-        │   └── example.setup.ts Logs in once, saves the session
-        ├── commonFunctions/
-        │   ├── globalVariables.ts  Shared state + BASE_URL + setPage()
-        │   ├── commonFunctions.ts  Logging + assertion helpers (comFunc)
-        │   └── loginLogout.ts      login / logout / beforeEach setup
-        └── pageObjects/
-            └── home-po.ts       Example Page Object
+├── CLAUDE.md                    How the AI pipeline is wired (read by Claude Code)
+├── README.md                    <- YOU ARE HERE
+├── .claude/skills/              The AI pipeline: one folder per skill
+├── .github/                     Copilot mirrors of those skills + CI workflow
+├── .sauce/config.yml            SauceLabs runner config + suites
+├── .test-history/runs.jsonl     Append-only run history (flaky detection)
+├── docs/                        See 5.3
+└── playwright/                  See 5.2
 ```
 
 **Rule of thumb:** your tests go in `playwright/e2e/`, reusable code goes in
-`playwright/support/`.
+`playwright/support/`, and anything a human reads goes in `docs/`.
 
-### Two conceptual layers
+### 5.1 Configuration & tooling (repo root)
 
-The project splits into two layers — one decides **how** tests run, the other is
-**what** runs.
+These control execution, not the tests themselves:
 
-**1. Configuration & tooling (repo root).** These files control execution, not the
-tests themselves:
-
-- `package.json` — the scripts you run + the dependency list.
-- `tsconfig.json` — strict TypeScript, type-check only (`noEmit`).
-- `eslint.config.mjs` / `.prettierrc` — code quality + consistent formatting.
-- `.env.example` — documents env vars; copy to `.env` and fill in real values.
-- `.gitignore` — keeps `node_modules`, sessions, reports, logs, `.env` out of git.
-- `playwright.config.ts` — the control center: timeouts, baseURL, reporters,
+- `package.json` - the scripts you run + the dependency list.
+- `tsconfig.json` - strict TypeScript, type-check only (`noEmit`).
+- `eslint.config.mjs` / `.prettierrc` - code quality + consistent formatting.
+- `.env.example` - documents env vars; copy to `.env` and fill in real values.
+- `.gitignore` - keeps `node_modules`, sessions, reports, logs, `.env` out of git.
+- `playwright.config.ts` - the control center: timeouts, baseURL, reporters,
   `globalTeardown`, and the **`projects[]`** array (one entry per test group).
-- `playwright.sauce.config.ts` + `run-sauce.ts` + `.sauce/config.yml` — the
+- `playwright.sauce.config.ts` + `run-sauce.ts` + `.sauce/config.yml` - the
   SauceLabs cloud-execution trio.
 
-**2. The framework + tests (`playwright/`).**
+### 5.2 The framework + tests (`playwright/`)
 
 ```
 playwright/
-├── .auth/                   Saved storageState JSON (login sessions) — git-ignored
-├── e2e/                     Test specs (what you run)
-│   ├── example.spec.ts      Reference smoke/regression test — copy its shape
-│   └── README.spec.ts       In-code copy of the guide (no runnable tests)
-└── support/                 Framework helper code (not tests)
-    ├── allureRunContext.ts  One shared run id + folder names for the whole run
-    ├── globalTeardown.ts    After the run: collect results + build Allure report
-    ├── logFileReporter.ts   Captures console output → out.txt
-    ├── auth/
+├── .auth/                   Saved storageState JSON (login sessions) - git-ignored
+├── e2e/                     UI test specs (what you run)
+│   ├── example.spec.ts      Reference smoke/regression test - copy its shape
+│   └── example.a11y.spec.ts Reference accessibility audit spec
+├── api/                     API-layer specs (*.api.spec.ts) - no browser needed
+├── testdata/                JSON fixtures the specs read (users.json, ...)
+└── support/                 Framework helper code (never tests)
+    ├── auth/                Log in once, save the session
     │   ├── authPaths.ts     Where each slice's session file is saved
     │   └── example.setup.ts Logs in once, saves the session
-    ├── commonFunctions/
+    ├── commonFunctions/     The framework core
     │   ├── globalVariables.ts  Shared state, BASE_URL, setPage()
     │   ├── commonFunctions.ts  Logging + assertion helpers (comFunc)
     │   └── loginLogout.ts      login / logout / beforeEach setup
-    └── pageObjects/
-        └── home-po.ts       Example Page Object (locators + actions)
+    ├── pageObjects/         Locators + actions, one class per page
+    ├── api/apiClient.ts     HTTP calls with the same logging as a Page Object
+    ├── a11y/a11yAudit.ts    Dependency-free accessibility scan
+    ├── data/dataFactory.ts  Seeded realistic / boundary / adversarial values
+    └── reporting/           Everything about run output - nothing test-specific
+        ├── allureRunContext.ts     One shared run id + folder names
+        ├── logFileReporter.ts      Captures console output -> out.txt
+        ├── runHistoryReporter.ts   Appends each run to .test-history/runs.jsonl
+        ├── analyzeHistory.ts       Pass rate / flip rate / verdict per test
+        └── globalTeardown.ts       After the run: collect results + build report
 ```
+
+Two naming rules keep this navigable as it grows:
+
+- **`support/` holds capabilities, one folder per concern.** A new capability is
+  a new folder, never a loose file at the top of `support/`.
+- **`support/data/` generates values, `playwright/testdata/` stores them.** Same
+  word, different jobs - which is exactly why they no longer share a name.
+
+### 5.3 Documentation (`docs/`)
+
+```
+docs/
+├── README.md                Index - what each document is, and who writes it
+├── architecture.md/.html    How the AI pipeline is designed, and why
+├── quickstart.md            Scenario -> passing test, step by step
+├── roadmap.md               What is built, what is left, what is out of scope
+├── pipeline/                Working files the AI skills read and write
+│   ├── test-scenarios.md    TC-### scenarios (/create-scenarios)
+│   └── test-strategy.md     Layer assignments (/test-strategy)
+├── reports/                 Generated output - written for humans to read
+│   ├── review-report.md - run-report.md - healing-log.md
+│   ├── flaky-log.md - app-bugs.md
+│   └── a11y/                Raw per-page accessibility results (JSON)
+└── learning/                Personal notes - not part of the framework
+```
+
+The `pipeline/` vs `reports/` split is the useful one: **`pipeline/` files are
+inputs to the next AI step**, `reports/` files are outputs for a person. If you
+are wondering whether a skill will read a file, that is the answer.
 
 ### How the folders work together (run-time flow)
 
@@ -246,20 +268,26 @@ A single test run flows top-to-bottom through these pieces:
    reach the browser tab without passing `page` around.
 4. Tests use **`pageObjects/`** for locators/actions and
    **`commonFunctions/commonFunctions.ts`** (`comFunc`) for uniform logging.
-5. During the run, **`logFileReporter.ts`** captures all console output and
+5. During the run, **`reporting/logFileReporter.ts`** captures all console
+   output, **`reporting/runHistoryReporter.ts`** appends one record per test
+   to `.test-history/runs.jsonl`, and
    `allure-playwright` writes raw results into an isolated `allure-results-<runId>`
-   folder (named by **`allureRunContext.ts`**).
-6. When the run ends, **`globalTeardown.ts`** moves everything into
+   folder (named by **`reporting/allureRunContext.ts`**).
+6. When the run ends, **`reporting/globalTeardown.ts`** moves everything into
    `C:\LogFolder\<name>_<timestamp>_<runId>\`, generates the Allure HTML report,
    and writes `out.txt`.
 
-### The three support sub-folders at a glance
+### The support sub-folders at a glance
 
-| Folder | Responsibility | Edit it when… |
+| Folder | Responsibility | Edit it when... |
 |---|---|---|
 | `support/auth/` | Log in once, persist the session | Adding a new user role / authenticated area |
-| `support/commonFunctions/` | Shared state, logging, login/logout | Rarely — it's the framework core |
+| `support/commonFunctions/` | Shared state, logging, login/logout | Rarely - it's the framework core |
 | `support/pageObjects/` | Locators + actions for one page each | Building coverage for new pages |
+| `support/api/` | HTTP calls with framework logging | Writing API-layer tests |
+| `support/a11y/` | Accessibility scanning | Extending the rule set |
+| `support/data/` | Generating test values | Adding a field type or payload class |
+| `support/reporting/` | Run output, logs, history | Almost never - it's wired already |
 
 ### Where you'll actually work day-to-day
 
@@ -268,6 +296,8 @@ A single test run flows top-to-bottom through these pieces:
 - **Add a page's locators/actions** → new file in `playwright/support/pageObjects/`.
 - **Add a login for a new role** → a path in `authPaths.ts` + a `*.setup.ts` in
   `support/auth/` + a project pair in the config.
+- **Add an API test** -> new file in `playwright/api/`; the `api` project already
+  matches `*.api.spec.ts`, so no config change is needed.
 
 Everything else (reporting, logging, folder naming, teardown) is already wired and
 runs automatically.

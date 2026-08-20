@@ -1,0 +1,18 @@
+{
+  "url": "https://rahulshettyacademy.com/client/",
+  "scannedAt": "2026-08-20T04:22:12.364Z",
+  "violations": [
+    {
+      "rule": "landmark-main",
+      "impact": "moderate",
+      "message": "Page has no <main> landmark",
+      "selector": "",
+      "snippet": ""
+    }
+  ],
+  "counts": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 1
+  }
+}

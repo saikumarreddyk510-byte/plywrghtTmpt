@@ -6,7 +6,7 @@ description: Write Playwright TypeScript E2E tests with real-browser validation 
 Follow the process in `.claude/skills/generate-tests/SKILL.md` exactly. It is
 the single source of truth for this step — used by both the Claude Code and
 Copilot pipelines. Read it, `.claude/skills/playwright-best-practices/SKILL.md`,
-`.claude/skills/app-domain/SKILL.md`, and `docs/test-strategy.md` before
+`.claude/skills/app-domain/SKILL.md`, and `docs/pipeline/test-strategy.md` before
 writing anything.
 
 Copilot-specific mechanics:

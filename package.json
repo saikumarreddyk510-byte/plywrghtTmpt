@@ -9,6 +9,8 @@
     "pw:test:smoke": "cross-env SMOKE=true playwright test",
     "pw:test:headed": "playwright test --headed",
     "pw:test:smoke:headed": "cross-env SMOKE=true playwright test --headed",
+    "pw:test:api": "playwright test --project=api",
+    "pw:test:a11y": "playwright test --project=a11y",
     "pw:test:ui": "playwright test --ui",
     "pw:list": "playwright test --list",
     "lint": "eslint \"playwright/**/*.ts\"",
@@ -17,7 +19,11 @@
     "sauce:update-config": "ts-node run-sauce.ts",
     "sauce:run": "ts-node run-sauce.ts && saucectl run --config .sauce/config.yml",
     "sauce:run:smoke": "ts-node run-sauce.ts && saucectl run --config .sauce/config.yml --env SMOKE=true",
-    "report:open": "allure open allure-report"
+    "report:open": "allure open allure-report",
+    "history:analyze": "ts-node playwright/support/reporting/analyzeHistory.ts",
+    "history:json": "ts-node playwright/support/reporting/analyzeHistory.ts --json",
+    "typecheck": "tsc --noEmit",
+    "skills:validate": "node .claude/skills/validate-skills.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

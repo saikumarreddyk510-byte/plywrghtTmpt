@@ -56,11 +56,18 @@ that.
 |---|---|---|---|
 | `app-domain` | never directly (`user-invocable: false`) | — | — (ships empty; fill in per project, §10) |
 | `playwright-best-practices` | never directly (`user-invocable: false`) | — | — (reference only) |
-| `create-scenarios` | `/create-scenarios [feature]` | `app-domain`, existing specs | `docs/test-scenarios.md` |
-| `test-strategy` | `/test-strategy [feature]` | `docs/test-scenarios.md`, `app-domain` | `docs/test-strategy.md` |
+| `create-scenarios` | `/create-scenarios [feature]` | `app-domain`, existing specs | `docs/pipeline/test-scenarios.md` |
+| `test-strategy` | `/test-strategy [feature]` | `docs/pipeline/test-scenarios.md`, `app-domain` | `docs/pipeline/test-strategy.md` |
 | `generate-tests` | `/generate-tests [flow]` | best-practices, domain, strategy doc, Playwright MCP | spec + PO + config entry |
-| `review-tests` | `/review-tests [file]` | best-practices, the spec(s) under review | `docs/review-report.md` |
+| `review-tests` | `/review-tests [file]` | best-practices, the spec(s) under review | `docs/reports/review-report.md` |
 | **`ship-test`** | **`/ship-test <scenario>`**, or just paste a scenario | orchestrates the four above via subagents | everything above, end to end |
+| `explore-app` | `/explore-app [url]` | the live app via MCP, current `app-domain` | `docs/pipeline/domain-draft.md`, proposed TCs, `docs/pipeline/exploration-findings.md` |
+| `generate-api-tests` | `/generate-api-tests [endpoint]` | strategy doc (API rows), `app-domain`, `apiClient` | `playwright/api/*.api.spec.ts` |
+| `generate-testdata` | `/generate-testdata [model]` | `app-domain` data models, `dataFactory` | `playwright/testdata/*.json`, data-driven specs |
+| `detect-flaky` | `/detect-flaky [spec]` | `.test-history/runs.jsonl` via `analyzeHistory` | `docs/reports/flaky-log.md`, quarantine edits |
+| `run-report` | `/run-report` | run history, `out.txt`, `app-domain` | `docs/reports/run-report.md` |
+| `audit-a11y` | `/audit-a11y [page]` | `docs/reports/a11y/*.json`, live app via MCP | `docs/reports/a11y-report.md` |
+| **`autopilot`** | **`/autopilot [scope]`** | orchestrates run → triage → heal → re-run → report | `docs/reports/run-report.md`, `docs/reports/healing-log.md`, `docs/reports/app-bugs.md` |
 
 The two knowledge skills (`app-domain`, `playwright-best-practices`) are marked
 `user-invocable: false` deliberately — they're not commands, they're shared
@@ -94,7 +101,7 @@ the `heal-test` skill instead of guessing-and-retrying the same selector:
 | Medium — text/label or position-disambiguated match | Apply, re-run to confirm, log it, flag for a human glance |
 | Low — multiple candidates or nothing serves the same purpose | Apply nothing. Cross-check `app-domain` — this may be an app bug, not selector rot |
 
-Every applied fix — High or Medium — gets one row in `docs/healing-log.md`
+Every applied fix — High or Medium — gets one row in `docs/reports/healing-log.md`
 (spec/PO, old locator, new locator, confidence, reason). No silent fixes: a
 bad auto-heal needs to be traceable, not discovered by accident. Low
 confidence never auto-applies, on purpose — see the guardrail list in
@@ -210,8 +217,8 @@ burns through tokens for no benefit.
   in order: `/create-scenarios` → `/test-strategy` → `/generate-tests` →
   `/review-tests`.
 
-Both paths write to the same files (`docs/test-scenarios.md`,
-`docs/test-strategy.md`, `playwright/e2e/`, `playwright/support/pageObjects/`), so
+Both paths write to the same files (`docs/pipeline/test-scenarios.md`,
+`docs/pipeline/test-strategy.md`, `playwright/e2e/`, `playwright/support/pageObjects/`), so
 they can be mixed freely — e.g. batch-generate scenarios for a whole feature with
 `/create-scenarios`, then ship them one at a time with `/ship-test TC-014`.
 
@@ -334,3 +341,118 @@ up the issue `triage-baseline` files on a nightly failure, but it's
 issue-driven and asynchronous, not a scriptable "run this step in this job"
 call the way `claude -p` is — so it's a manual assignment, not automated in
 the workflow.
+
+---
+
+## 13. The maintenance loop (`/autopilot`)
+
+`/ship-test` closes the **authoring** loop: scenario in, passing spec out.
+`/autopilot` closes the **maintenance** loop, which is where a suite actually
+spends its life:
+
+```
+run → triage → fix what is safely fixable → re-run to prove it → report
+  ↑                                                                  │
+  └────────────── nightly CI, or one prompt from a human ────────────┘
+```
+
+It is an orchestrator in the §5 sense — cheap steps inline, expensive steps in
+subagents — and it reuses the existing skills rather than reimplementing them:
+`triage-failure` for the diagnosis, `heal-test` for selector rot,
+`generate-tests` for test bugs, `run-report` for the digest.
+
+What makes it safe to point at a real suite is its hard limits, which are part
+of the skill, not advice in a doc:
+
+1. At most **one** fix-and-re-run cycle. A loop that keeps going on red
+   eventually reaches green by removing assertions.
+2. Never make a test pass by weakening it — no deleted assertions, no
+   `waitForTimeout`, no raised global timeouts, no per-test retries.
+3. App bugs are filed (`docs/reports/app-bugs.md`), never absorbed into the test.
+4. No commits, no pushes, no PRs. It edits the working tree and reports.
+5. Nothing is quarantined off a single red run — flake claims need history.
+
+Limit 3 is the one that matters most in practice. An agent that can edit tests
+and wants green has an obvious shortcut available, and the whole value of the
+suite depends on it never taking that shortcut.
+
+## 14. Run history — the memory everything after authoring needs
+
+`RunHistoryReporter` (registered in `playwright.config.ts`) appends one JSON
+line per test per run to `.test-history/runs.jsonl`: outcome, retry, duration,
+branch, CI flag, TC-IDs, and a deterministic `failureClass`
+(`locator` / `assertion` / `navigation` / `network` / `timeout` / `setup`).
+
+`playwright/support/reporting/analyzeHistory.ts` turns that into per-test statistics —
+pass rate, **flip rate**, duration spread, dominant failure class — and assigns
+a verdict: `stable`, `flaky`, `consistently-failing`, `insufficient-data`.
+
+```
+npm run history:analyze          # human table
+npm run history:json             # what /detect-flaky and /run-report read
+```
+
+Two deliberate design points:
+
+- **The arithmetic is code, not judgement.** Flip rate is not a matter of
+  opinion, so the skills do not recompute it from raw JSONL — they read the
+  script's output and spend their reasoning on *why* a test flips. Same
+  numbers every time, from anyone.
+- **Flip rate, not failure count, is the flakiness signal.** A test that fails
+  every run is broken, not flaky, and needs `/triage-failure`, not a
+  quarantine. Conflating the two is how real regressions get dismissed as
+  "just flaky".
+
+The file is append-only and union-merged (`.gitattributes`), so branches that
+both ran the suite do not conflict.
+
+## 15. The full pyramid, finally
+
+`test-strategy` has assigned work to API and Unit tiers since it was written,
+and until now nothing implemented them — the documented pyramid was an
+ice-cream cone in practice. Three additions close that:
+
+| Layer | What runs it | Where the code is |
+|---|---|---|
+| API / Integration | `/generate-api-tests` → `npm run pw:test:api` | `playwright/api/*.api.spec.ts`, `support/api/apiClient.ts` |
+| Data / fuzz (cross-layer) | `/generate-testdata` | `support/data/dataFactory.ts` |
+| Accessibility | `/audit-a11y` → `npm run pw:test:a11y` | `support/a11y/a11yAudit.ts` |
+
+`apiClient` logs through the same `comFunc` helpers as the Page Objects, so an
+API failure reads identically to a UI failure in `out.txt` and Allure — one
+log format across layers, which is what makes a single `/run-report` possible.
+
+`dataFactory` is **seeded** (`PW_DATA_SEED`). Random fuzz data produces
+failures nobody can reproduce, and an unreproducible failure gets ignored,
+which is worse than not testing at all.
+
+`a11yAudit` deliberately has **no npm dependency** — it runs structural WCAG
+checks inside the page, so `npm ci` and the lockfile are untouched. Its known
+gaps (colour contrast, screen-reader quality) are documented in the module
+itself and restated in every report it feeds, because a structural scan that
+implies full WCAG coverage is worse than no scan in a compliance conversation.
+
+## 16. Bootstrapping, revisited
+
+§10's step 2 — "fill in every section of `app-domain` by hand" — was the one
+part of this pipeline with no AI in it at all, and the main reason starting a
+new project felt slow. `/explore-app` now drafts it from the live app:
+
+```
+/explore-app          →  docs/pipeline/domain-draft.md   ([NEW] / [CONFLICT] / [CONFIRMED])
+                         docs/pipeline/exploration-findings.md
+                         proposed TCs appended to docs/pipeline/test-scenarios.md
+human reviews         →  merges what is right into app-domain
+/ship-test <scenario> →  first passing spec
+```
+
+It **proposes**; it never overwrites `app-domain`. That guard rail is the same
+one `review-tests` follows, and for the same reason: the domain file is the
+oracle every other skill trusts, so a wrong line in it silently corrupts
+everything downstream. A human confirming a draft is much cheaper than a human
+debugging tests written against a hallucinated business rule.
+
+`[CONFLICT]` items — where the documented domain and the live app disagree —
+are never auto-resolved. That disagreement is either a stale doc or a real
+regression, and only a human knows which.
+

@@ -10,8 +10,8 @@ including its full checklist. It is the single source of truth for this step
 `.claude/skills/app-domain/SKILL.md` before reviewing anything.
 
 Copilot-specific mechanics: none — this is a static review, no browser or MCP
-tool needed. Output goes to `docs/review-report.md`, same as the Claude Code
-pipeline. If any file under review appears in `docs/healing-log.md`, also
+tool needed. Output goes to `docs/reports/review-report.md`, same as the Claude Code
+pipeline. If any file under review appears in `docs/reports/healing-log.md`, also
 apply the Self-Healing checklist items from `playwright-best-practices` §9.
 
 File(s) to review (blank = all of `playwright/e2e/*.spec.ts`):

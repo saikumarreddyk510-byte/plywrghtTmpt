@@ -1,6 +1,6 @@
 import "dotenv/config"; // loads .env into process.env — must run before anything below reads it
 import { defineConfig, devices } from "@playwright/test";
-import { allureResultsDir } from "./playwright/support/allureRunContext";
+import { allureResultsDir } from "./playwright/support/reporting/allureRunContext";
 
 /**
  * Playwright configuration template.
@@ -12,6 +12,8 @@ import { allureResultsDir } from "./playwright/support/allureRunContext";
  *   - bypassCSP + --disable-web-security
  *   - Allure isolated per-run results dir
  *   - LogFileReporter → C:\LogFolder\<specName>_<ts>_<runId>\out.txt
+ *   - RunHistoryReporter appends per-test outcomes to .test-history/runs.jsonl,
+ *     which is what /detect-flaky and /run-report reason over across runs
  *   - globalTeardown generates the Allure HTML report
  *   - trace: retain-on-failure — gives the `heal-test` skill (and CI failure
  *     triage later) the exact DOM at the moment of failure without having to
@@ -23,14 +25,15 @@ import { allureResultsDir } from "./playwright/support/allureRunContext";
  */
 export default defineConfig({
   testDir: "playwright/e2e",
-  globalTeardown: "./playwright/support/globalTeardown.ts",
+  globalTeardown: "./playwright/support/reporting/globalTeardown.ts",
   timeout: 120_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
   reporter: [
     ["list"],
     ["allure-playwright", { resultsDir: allureResultsDir }],
-    ["./playwright/support/logFileReporter.ts"],
+    ["./playwright/support/reporting/logFileReporter.ts"],
+    ["./playwright/support/reporting/runHistoryReporter.ts"],
   ],
   use: {
     baseURL: process.env.BASE_URL ?? "https://your-app.example.com",
@@ -70,6 +73,26 @@ export default defineConfig({
     {
       name: "facilities",
       testMatch: /facilities\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        launchOptions: { args: ["--disable-web-security"] },
+      },
+    },
+
+    // ─── API layer (test-strategy's API/Integration assignments) ────────────
+    {
+      // Skips itself unless API_BASE_URL / BASE_URL is set — see the spec.
+      name: "api",
+      testDir: "playwright/api",
+      testMatch: /.*\.api\.spec\.ts/,
+      use: {}, // no browser needed: ApiClient uses Playwright's request context
+    },
+
+    // ─── Accessibility audits ───────────────────────────────────────────────
+    {
+      name: "a11y",
+      testMatch: /.*\.a11y\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",

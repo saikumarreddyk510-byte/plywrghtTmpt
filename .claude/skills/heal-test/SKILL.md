@@ -30,6 +30,11 @@ Healing answers *"does this element still exist under a different selector?"* �
 not *"is the app doing the right thing?"*. Confusing the two is how a real
 regression quietly gets papered over.
 
+## Input
+
+`$ARGUMENTS` — the spec to heal. Blank means the spec from the most recent
+failed run.
+
 ## Knowledge Sources
 1. `playwright-best-practices` skill — locator priority order every healed
    locator must still respect (IDs > roles > labels > text > CSS), and the
@@ -76,7 +81,7 @@ requires.
 
 | Confidence | When | Action |
 |---|---|---|
-| **High** | Exactly one element unambiguously matches the old locator's role + purpose | Apply the fix, re-run to confirm the test now passes, append a `docs/healing-log.md` entry |
+| **High** | Exactly one element unambiguously matches the old locator's role + purpose | Apply the fix, re-run to confirm the test now passes, append a `docs/reports/healing-log.md` entry |
 | **Medium** | Matched by text/label only, or disambiguated by position among similar elements | Apply the fix, re-run to confirm, append the log entry, and call it out explicitly in the report as worth a human glance |
 | **Low** | Multiple equally-plausible candidates, or nothing serves the same purpose anymore | **Apply nothing.** Cross-check the flow against `app-domain`. If the app now contradicts the documented flow, this is a candidate app bug, not selector rot — report it; don't guess a locator to make the red go away |
 
@@ -84,7 +89,7 @@ Cap at one healing attempt per locator per invocation — if the first proposed
 fix doesn't make the test pass, stop and report rather than guessing again.
 
 ### Step 5 — Record it
-Every High/Medium fix gets one row in `docs/healing-log.md` (create it with
+Every High/Medium fix gets one row in `docs/reports/healing-log.md` (create it with
 this header if it doesn't exist yet):
 
 ```markdown
@@ -104,3 +109,36 @@ Report:
 - Which were left unhealed (Low confidence) and why, including any suspected
   app bug.
 - Whether the test now passes — or still fails, and on what.
+
+## Guardrails
+
+- **A heal relocates an element; it never redesigns a test.** If the fix
+  involves changing an assertion, a step, or a flow, you are outside this skill.
+- **A heal never downgrades locator quality** below what
+  `playwright-best-practices` §2 requires. No bare `nth()` as a fix unless the
+  original was already positional.
+- **Low confidence means apply nothing.** Guessing a locator to clear a red is
+  how a real regression gets papered over.
+- **One attempt per locator per invocation.** If the first fix does not make the
+  test pass, stop and report rather than iterating on guesses.
+- **No silent fixes.** Every applied heal gets a `docs/reports/healing-log.md`
+  row, so a wrong auto-fix is traceable rather than discovered weeks later.
+
+## Done means
+
+- The failure was confirmed as locator-class before anything was changed.
+- Each broken locator is healed, or explicitly left alone with the reason.
+- The spec was re-run, and its real result is reported.
+- Every High/Medium heal has a log row; Medium heals are flagged for a human
+  glance.
+- Anything that turned out to be an app bug is reported as one, with the test
+  left untouched.
+
+## When *not* to use this skill
+
+- The element was found and the assertion disagreed → that is a behaviour
+  difference, not selector rot. Use `/triage-failure` to classify it.
+- The page never loaded or the URL is wrong → investigate the flow or the
+  environment, not a selector.
+- You do not yet know which class of failure you have → `/triage-failure`
+  first; it routes back here if the answer is selector rot.

@@ -1,6 +1,6 @@
 import "dotenv/config"; // loads .env into process.env — must run before anything below reads it
 import { defineConfig, devices } from "@playwright/test";
-import { allureResultsDir } from "./playwright/support/allureRunContext";
+import { allureResultsDir } from "./playwright/support/reporting/allureRunContext";
 
 /**
  * Playwright config for SauceLabs execution.
@@ -13,14 +13,14 @@ import { allureResultsDir } from "./playwright/support/allureRunContext";
  */
 export default defineConfig({
   testDir: "playwright/e2e",
-  globalTeardown: "./playwright/support/globalTeardown.ts",
+  globalTeardown: "./playwright/support/reporting/globalTeardown.ts",
   timeout: 120_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
   reporter: [
     ["list"],
     ["allure-playwright", { resultsDir: allureResultsDir }],
-    ["./playwright/support/logFileReporter.ts"],
+    ["./playwright/support/reporting/logFileReporter.ts"],
   ],
   use: {
     baseURL: process.env.SAUCE_BASE_URL ?? process.env.BASE_URL ?? "https://your-app.example.com",

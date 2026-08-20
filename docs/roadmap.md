@@ -37,20 +37,28 @@ optional enrichment on top, not a dependency.
 
 ## Tier 2 — closes real gaps in coverage
 
+**✅ Complete.** All three shipped — see `docs/architecture.md` §15 (API tier,
+generated data) and §16 (exploration). None of them adds an npm dependency.
+
 | # | Enhancement | What it does | Why it matters |
 |---|---|---|---|
-| 4 | **API & Unit test generators** | `generate-api-tests` (Playwright `request` fixture) and `generate-unit-tests`, mirroring `generate-tests` but for the layers `test-strategy` already assigns work to. | `test-strategy` has flagged "everything at E2E = ice cream cone" as an anti-pattern since it was written — but nothing has ever implemented the API/Unit tier it recommends. The pyramid is currently only documented, not built. |
-| 5 | **Exploratory/discovery agent** — `/explore-app` | Crawls the live app via Playwright MCP — clicks primary nav, tries sample form input, notes console errors, broken links, and accessibility violations — then drafts/updates `app-domain`'s User Flows and Business Rules, and proposes new TC scenarios for whatever it found. | `app-domain` currently has to be hand-written before anything else runs (by design — see the guard rail in `docs/architecture.md` §2). This is the one piece of the pipeline that's still 0% AI. |
-| 6 | **AI-generated test data / fuzzing** | Reads the data models already documented in `app-domain` and generates realistic, boundary, and adversarial values per field (XSS payloads, max-length strings, unicode, negative numbers, empty/null) instead of the fixed rows in `testdata/*.json`. | `create-scenarios`' Security and Edge Case lenses already exist — they just have no data to actually exercise. This is what makes those lenses real instead of aspirational. |
+| 4 | ~~API & Unit test generators~~ — `/generate-api-tests` | ✅ **Shipped** — `docs/architecture.md` §15. API/Integration specs against `support/api/apiClient.ts`, run by `npm run pw:test:api`, so `test-strategy`'s API rows become code instead of a table. Unit generation stays out of scope on purpose: unit tests belong in the app repo, next to the code they test. | — |
+| 5 | ~~Exploratory/discovery agent~~ — `/explore-app` | ✅ **Shipped** — `docs/architecture.md` §16. Crawls the live app through MCP and drafts `app-domain` (flows, rules, data models, selector inventory) plus proposed TCs and an app-findings list. Proposes only — never overwrites the domain file, and never auto-resolves a `[CONFLICT]`. | — |
+| 6 | ~~AI-generated test data / fuzzing~~ — `/generate-testdata` | ✅ **Shipped** — `docs/architecture.md` §15. Realistic / boundary / adversarial values from `support/data/dataFactory.ts`, each carrying an explicit accept-or-reject expectation. Seeded, never random, so a fuzz failure is reproducible. | — |
 
 ## Tier 3 — maintenance, trust, and reporting
 
+**Mostly complete.** 7, 9, and 10 shipped — see `docs/architecture.md` §13–§15.
+8 (visual regression) is still proposed: it is the only item here that needs
+baseline image storage and an image-capable review step, so it is a bigger
+change than the rest and has not been built.
+
 | # | Enhancement | What it does | Why it matters |
 |---|---|---|---|
-| 7 | **Flaky test detection** | A lightweight custom reporter appends pass/fail per test per run to a local log; a periodic `/detect-flaky` skill flags inconsistent tests, hypothesizes a cause (timing, ordering, shared state), and quarantines them out of the smoke suite. | Without history, "flaky" is just a feeling. This makes it measurable and lets AI act on it instead of a human eyeballing CI over weeks. |
+| 7 | ~~Flaky test detection~~ — `/detect-flaky` | ✅ **Shipped** — `docs/architecture.md` §14. `RunHistoryReporter` writes `.test-history/runs.jsonl`; `analyzeHistory.ts` computes pass rate, flip rate, and a verdict per test; the skill hypothesises a cause and quarantines with a receipt in `docs/reports/flaky-log.md`. | — |
 | 8 | **Visual regression with AI-judged diffs** | Baseline screenshots + pixel diff, but an LLM looks at both images before flagging: is this a real UI regression, or a timestamp/font-rendering/dynamic-content difference? | Pure pixel-diff visual testing drowns teams in false positives until nobody trusts it. The AI judgment step is what keeps it usable. |
-| 9 | **Natural-language run reports** | Turns the Allure JSON summary into a short digest — what changed vs. the last run, which business flows are affected, trend over time — posted to PR/Slack instead of requiring someone to open the HTML report. | Allure is for engineers. A one-paragraph "what broke and why it matters" is for everyone else who needs to know. |
-| 10 | **Accessibility auditing** | axe-core scan per page, with an AI pass turning raw violations into prioritized, actionable fixes rather than a dumped report. | Same shape as visual regression: the scan already exists as a library; the AI step is what turns output into action. |
+| 9 | ~~Natural-language run reports~~ — `/run-report` | ✅ **Shipped** — `docs/architecture.md` §13. Verdict first, business language in the body, TC-IDs in parentheses, trend from run history, quarantined tests counted as lost coverage rather than passes. | — |
+| 10 | ~~Accessibility auditing~~ — `/audit-a11y` | ✅ **Shipped** — `docs/architecture.md` §15. Dependency-free structural scan in `support/a11y/a11yAudit.ts` (`npm run pw:test:a11y`), plus live keyboard/focus checks via MCP, prioritised by real user impact and mapped to WCAG in `docs/reports/a11y-report.md`. Its gaps (contrast, screen-reader quality) are stated in every report. | — |
 
 ---
 
@@ -67,23 +75,35 @@ ships unreviewed. Keep these gates even after building everything above:
   erodes trust in a test suite.
 - **CI auto-comments, it doesn't auto-merge.** Review output blocks nothing by
   itself; a human still approves the PR.
+- **`/autopilot` gets at most one fix-and-re-run cycle**, and may never reach
+  green by weakening a test (deleted assertion, `waitForTimeout`, raised global
+  timeout, added retry). Still red after one honest attempt is a valid,
+  reportable outcome — an agent that keeps going until green has an obvious
+  shortcut available and will eventually take it.
+- **App bugs are filed (`docs/reports/app-bugs.md`), never absorbed into a test.** The
+  test stays red so the signal survives until someone fixes the app.
+- **Nothing is quarantined off a single red run**, and every quarantine in
+  `docs/reports/flaky-log.md` carries a re-check date. A quarantine without one is a
+  deletion with extra steps.
 - **Exploratory agent (Tier 2.5) drafts `app-domain`, it doesn't overwrite it**
   — diff against the existing file and propose additions, the same way
   `review-tests` proposes fixes instead of silently rewriting specs.
 
-## Suggested build order
+## What is left
 
-Tier 1 is done — the pipeline now runs, watches, and diagnoses itself instead
-of stopping the moment a spec is written. What's left is Tier 2 (real coverage
-gaps) and Tier 3 (trust/reporting polish).
+| # | Item | Why it is still open |
+|---|---|---|
+| 8 | Visual regression with AI-judged diffs | Needs baseline image storage, a diff step, and an image-capable review pass. The AI-judgement step is what would keep it usable — pure pixel diffing drowns teams in false positives — but the storage and review plumbing is a bigger change than anything in Tier 2. |
+| — | Unit test generation | Deliberately out of scope for this repo. Unit tests belong next to the code they test, in the app repo, run by that repo's CI. `test-strategy` should keep assigning work to the Unit tier and naming the function — it just hands the assignment over rather than implementing it here. |
+| — | Parallel-safe execution | `fullyParallel: false` is forced by the shared `globalVariables.page` handle. Every new layer added above (API, a11y, fuzz) makes the serial run longer. Moving to fixture-injected pages would unlock parallelism, but it is a breaking refactor of every existing Page Object — a deliberate decision for a human, not a silent one. |
 
-5 (exploratory agent) is worth building first if bootstrapping new projects
-(`docs/architecture.md` §10) is the current bottleneck, since it directly
-shortens that step — and it's also the last piece of the pipeline that's still
-0% AI.
-4 (API/Unit generators) is worth building first if the suite is E2E-heavy
-enough that `test-strategy` is already flagging the ice-cream-cone anti-pattern
-in real output.
-7 (flaky detection) pairs naturally with `triage-failure`'s flake-candidate
-flag (§11) — it's what turns "flagged once" into "tracked and quarantined
-automatically."
+## Where the AI stands now
+
+```
+[ /explore-app drafts domain ] → [ AI authors tests ] → [ AI runs, watches, fixes, reports ]
+        Tier 2 ✅ (human confirms)        done                   Tier 1 + 3 ✅ (/autopilot)
+```
+
+Every stage now has an AI path, and every stage that can silently corrupt the
+suite still has a human gate on it. That combination — not the absence of
+gates — is what "100% AI-driven" is supposed to mean here.

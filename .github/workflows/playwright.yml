@@ -58,6 +58,20 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  # ── Tier 0: the skills themselves are lint-able artifacts ────────────────
+  # A skill with malformed frontmatter never loads and a skill pointing at a
+  # renamed file sends the agent to a dead path — both fail silently at run
+  # time. Cheapest job in the workflow; catches the whole class in seconds.
+  lint-skills:
+    name: Validate Claude skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run skills:validate
+
   test:
     name: Run Playwright tests
     runs-on: windows-latest
@@ -94,6 +108,18 @@ jobs:
           path: C:/LogFolder/**
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload run history
+        # .test-history/runs.jsonl is what /detect-flaky and /run-report reason
+        # over. Uploading it keeps CI runs part of the same history a developer
+        # sees locally, instead of each environment judging flakiness alone.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-history
+          path: .test-history/**
+          if-no-files-found: ignore
+          retention-days: 90
 
       - name: Upload raw traces + screenshots
         if: always()
