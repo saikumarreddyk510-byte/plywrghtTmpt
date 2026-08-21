@@ -1,12 +1,7 @@
 ---
 name: ship-test
 description: Turn one plain-English test scenario into a fully implemented, passing Playwright spec — the single-prompt entry point for this framework. Chains scenario capture, layer classification, real-browser (MCP) implementation, and a scoped code review through isolated subagents with tiered models, so cost and latency stay low even after many runs in the same session. Use whenever the user describes a user flow to automate, says "add a test for X", pastes a TC-ID, or asks to turn a scenario into a spec.
-argument-hint:
-  [
-    scenario description,
-    or a TC-ID from docs/pipeline/test-scenarios.md,
-    or blank for the next unimplemented TC,
-  ]
+argument-hint: [scenario description, or a TC-ID from docs/pipeline/test-scenarios.md, or blank for the next unimplemented TC]
 ---
 
 # Ship Test — One Prompt → One Passing Spec
@@ -87,7 +82,6 @@ let the user re-run `/review-tests` later if they want a second pass.
 ## Step 5 — Report (inline, short)
 
 Tell the user, in under 10 lines:
-
 - TC-ID(s) shipped and the files touched.
 - Pass/fail from the real browser run.
 - Review score and any remaining non-critical issues.
@@ -115,7 +109,7 @@ Tell the user, in under 10 lines:
   either fixed or reported as outstanding.
 - The final report is under 10 lines and states the real pass/fail.
 
-## When _not_ to use this skill
+## When *not* to use this skill
 
 - Generating scenarios for a whole feature or the whole app → use `/create-scenarios`
   directly (batch mode).

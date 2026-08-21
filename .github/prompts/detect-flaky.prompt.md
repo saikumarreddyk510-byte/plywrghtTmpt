@@ -9,10 +9,9 @@ timeouts, no per-test retries, no weakened assertions) and the requirement that
 every quarantine gets a row with a re-check date in `docs/reports/flaky-log.md`.
 
 Copilot-specific mechanics:
-
 - Start from `npm run history:json -- --runs 30 --min-runs 3`. Do not re-derive
   the statistics by reading `.test-history/runs.jsonl` yourself — the script is
-  deterministic, your judgement is needed for _why_ a test flips.
+  deterministic, your judgement is needed for *why* a test flips.
 - A `consistently-failing` verdict is not flakiness; it is a regression — read
   the run's trace in the Playwright HTML report instead of quarantining it.
 

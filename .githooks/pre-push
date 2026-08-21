@@ -15,4 +15,10 @@ npm run lint
 echo "pre-push: tsc --noEmit…"
 npm run typecheck
 
+# CI runs this too. It is here because the checks above cannot see it: a
+# formatter or a careless edit can break skill frontmatter while lint and
+# tsc stay perfectly green, and the first sign would be a red CI run.
+echo "pre-push: validating .claude/skills…"
+npm run skills:validate
+
 echo "pre-push: all checks passed — pushing."

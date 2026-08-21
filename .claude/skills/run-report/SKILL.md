@@ -15,7 +15,6 @@ to know whether the release is safe. Different audience, different document.
 `$ARGUMENTS` — a run folder, or `last`. Blank uses the most recent run.
 
 ## Knowledge Sources
-
 1. `npm run history:json -- --runs 10` — per-test pass/flip rates and the last
    status of everything. This is your trend data.
 2. The most recent `C:\LogFolder\<specName>_<ts>_<runId>\out.txt` — the
@@ -35,29 +34,23 @@ print the same content back to the user.
 # Run Report — <date> · <branch> · <smoke|regression>
 
 ## Verdict
-
 <One sentence. Ship / do not ship / ship with a known issue. Say which.>
 
 ## Numbers
-
 <passed>/<total> passed · <failed> failed · <flaky> flaky · <duration>
 Change since last run: <+/- passes, new failures, fixed failures>
 
 ## What broke, in business terms
-
 - **<Business flow>** — <what a user would experience>. (TC-xxx, <spec file>)
   Cause: <selector rot | test bug | app bug | flake>.
 
 ## Fixed since last run
-
 - <flow> — was failing on <date>, passing now.
 
 ## Watch list
-
 - <test> — flaky, passed <n>/<m> recent runs. See docs/reports/flaky-log.md.
 
 ## Recommended next step
-
 <One action, named and assigned to a skill or a human.>
 ```
 
@@ -80,7 +73,6 @@ Change since last run: <+/- passes, new failures, fixed failures>
   give a count; detail belongs in the HTML report, not here.
 
 ## Optional: post it
-
 If the user asks for it in a PR or a chat channel, keep exactly this structure —
 it is short enough to paste as-is. Never post anything containing credentials,
 tokens, customer data, or internal URLs that are not already public in the repo.
@@ -95,9 +87,9 @@ tokens, customer data, or internal URLs that are not already public in the repo.
   never netted into the pass rate.
 - `docs/reports/run-report.md` is written and fits on one screen.
 
-## When _not_ to use this skill
+## When *not* to use this skill
 
-- You need to know _why_ something failed → open the run's trace in the
+- You need to know *why* something failed → open the run's trace in the
   Playwright HTML report; this report states what broke and who it affects, it
   does not root-cause.
 - You want the failures fixed as well as reported → `/autopilot`, which ends by

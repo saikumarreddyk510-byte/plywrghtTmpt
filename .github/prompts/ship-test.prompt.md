@@ -9,7 +9,6 @@ the single source of truth for this step — used by both the Claude Code and
 Copilot pipelines.
 
 Copilot-specific mechanics:
-
 - Steps 2 (build) and 3 (review) in the Claude Code version run as isolated
   subagents for token/context efficiency (`docs/architecture.md` §5) — that
   specific mechanism is Claude Code's `Agent` tool and has no direct Copilot

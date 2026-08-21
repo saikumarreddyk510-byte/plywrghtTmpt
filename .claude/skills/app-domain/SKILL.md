@@ -7,17 +7,15 @@ user-invocable: false
 # App Domain Knowledge
 
 ## App Overview
-
 **rahulshettyacademy.com/client** — "Ecom" — a practice e-commerce app for QA
 automation training. Users register, log in, browse products on a dashboard,
 add to cart, and place orders. Angular SPA (hash routing, `#/...`).
 
 ### Areas in Scope
-
-| Area      | Route                      | Purpose                       |
-| --------- | -------------------------- | ----------------------------- |
-| Login     | `/client/#/auth/login`     | Email + password sign-in      |
-| Register  | `/client/#/auth/register`  | New account creation          |
+| Area | Route | Purpose |
+|------|-------|---------|
+| Login | `/client/#/auth/login` | Email + password sign-in |
+| Register | `/client/#/auth/register` | New account creation |
 | Dashboard | `/client/#/dashboard/dash` | Product browsing, add to cart |
 
 ---
@@ -44,7 +42,6 @@ add to cart, and place orders. Angular SPA (hash routing, `#/...`).
 ## User Flows
 
 ### Flow 1: Login
-
 1. Navigate to `/client/#/auth/login`
 2. Fill Email (`#userEmail`) + Password (`#userPassword`)
 3. Click the submit input (`#login`)
@@ -57,7 +54,6 @@ are real, current element IDs; the toast text is exact (leading/trailing space
 included, matches the live app).
 
 ### Flow 2: Register
-
 1. Navigate to `/client/#/auth/register`
 2. Fill: First Name, Last Name, Email, Phone
 3. Select Occupation (dropdown — default disabled option "Choose your occupation")
@@ -71,13 +67,11 @@ included, matches the live app).
 ## Business Rules
 
 ### Login
-
 - Wrong credentials → toast error, no navigation away from the login page
 - Correct credentials → redirect to dashboard
 - Dashboard shows products with Add To Cart buttons
 
 ### Registration
-
 - Email must be unique — duplicate email = error
 - All fields mandatory — empty submit shows validation
 - Password and Confirm Password must match
@@ -86,6 +80,5 @@ included, matches the live app).
 ---
 
 ## Test Data Location
-
 `playwright/testdata/users.json` — `loginUser` holds a real, working account on
 this app (verified live): `saikumar@test.com` / `Test@1234` → successful login.

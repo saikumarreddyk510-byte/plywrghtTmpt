@@ -9,7 +9,6 @@ test pass by weakening it, app bugs get filed rather than absorbed, nothing is
 committed or pushed, and nothing is quarantined off a single red run.
 
 Copilot-specific mechanics:
-
 - Copilot has no subagent equivalent of the Claude Code delegation steps — run
   the classify and fix stages inline: classify each failure using the table in
   `.claude/skills/autopilot/SKILL.md` Step 2, then follow
