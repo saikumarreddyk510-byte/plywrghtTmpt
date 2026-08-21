@@ -1,47 +1,37 @@
-# CI wiring for the AI test-automation pipeline (docs/architecture.md §11-12).
+# CI/CD wiring for the test framework (docs/cicd.md, docs/architecture.md §11-12).
 #
-# Three layers, none of them a hard dependency on the ones above them:
-#   - `test`             — deterministic. Always runs, no AI vendor needed.
-#                           Runs the framework exactly as `npm run
-#                           pw:test[:smoke]` would locally.
+# Jobs, none of them a hard dependency on the others:
+#   - `lint-skills`    — validates the .claude/skills catalog. A skill with bad
+#                        frontmatter never loads and one pointing at a renamed
+#                        file sends the agent to a dead path; both fail silently
+#                        at run time. Cheapest job here, catches the whole class.
+#   - `quality`        — lint + typecheck. The same two commands
+#                        .githooks/pre-push runs locally; this is the copy that
+#                        actually enforces them, since a hook can be bypassed.
+#   - `test`           — the suite, exactly as `npm run pw:test[:smoke]` runs it
+#                        locally. Deterministic; no AI vendor involved.
+#   - `publish-report` — the CD job. Deploys the HTML report to GitHub Pages.
+#                        Off unless you opt in; see the job's own comment.
+#   - `review`         — optional AI review of changed specs. Runs only when
+#                        ANTHROPIC_API_KEY is set, skips cleanly (not fails)
+#                        otherwise, and never blocks a PR by itself — see
+#                        `continue-on-error` and "What stays human-gated" in
+#                        docs/roadmap.md.
 #
 # When it runs (see the `on:` block and the "Select suite" step):
-#   push (any branch)   -> FULL suite. The point of the push trigger: the code
-#                          you just pushed is exercised together with every test
-#                          already in the repo, so a new spec can't pass in
-#                          isolation while quietly breaking an existing one.
-#   pull_request -> main -> smoke only. Fast gate; the merge push then runs full.
+#   push (any branch)    -> FULL suite. The point of the push trigger: the code
+#                           you just pushed is exercised together with every
+#                           test already in the repo, so a new spec cannot pass
+#                           in isolation while quietly breaking an existing one.
+#   pull_request -> main -> smoke only. Fast gate; the merge push runs full.
 #   schedule (03:00 UTC) -> smoke only. The daily health check against the live
-#                          app, catching app-side drift on days nobody pushed.
-#   workflow_dispatch    -> operator picks full or smoke from the Run workflow
-#                          dropdown.
+#                           app, catching drift on days nobody pushed.
+#   workflow_dispatch    -> operator picks full or smoke from the dropdown.
 #
-# Every run uploads its HTML reports as workflow artifacts - see "Reports"
-# in the `test` job.
-#   - `triage-baseline`   — deterministic. Runs whenever `test` fails, no AI
-#                           vendor needed. Posts the raw evidence (failing
-#                           test names, an error excerpt, links to the
-#                           uploaded artifacts) as a PR comment or a tracked
-#                           GitHub issue. This is the value floor: CI produces
-#                           a real signal with zero AI configured anywhere.
-#   - `review` / `triage` — AI-driven, optional enrichment. Only run if
-#                           ANTHROPIC_API_KEY is set as a repo secret; skipped
-#                           cleanly (not failed) otherwise, and appends to
-#                           (never replaces) what triage-baseline already
-#                           posted. Never block the PR by themselves — see
-#                           `continue-on-error` below and "What stays
-#                           human-gated" in docs/roadmap.md.
-#
-# No job here is Claude-Code-specific or Anthropic-specific except the two
-# explicitly named `claude -p` invocations below — everything else (the
-# framework, the deterministic baseline) works with no AI vendor at all.
-# If you're driving this pipeline from GitHub Copilot instead of Claude Code:
-# GitHub's Copilot coding agent (assign-to-@copilot on an issue) is a real
-# option for picking up the issue `triage-baseline` files on a nightly
-# failure, but it's issue-driven and asynchronous — it doesn't fit the
-# "run a step, get output back in this job" shape the `review`/`triage` jobs
-# use, so it isn't scripted here. Assign the filed issue manually if you want
-# Copilot's coding agent to attempt it.
+# Every run uploads its HTML reports as workflow artifacts — see "Reports" in
+# the `test` job. That is where failure evidence lives: the Playwright HTML
+# report embeds the trace, screenshot and error for each failing test, so a red
+# run is diagnosable from the artifact alone.
 #
 # `test` runs on windows-latest on purpose: the framework's logging path
 # (`C:\LogFolder\...`) and Allure teardown are Windows-specific by design
@@ -51,22 +41,20 @@
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   BASE_URL, APP_USER, APP_PASSWORD   — same values as your local .env
-#   ANTHROPIC_API_KEY                  — optional; only needed for the
-#                                         `review` / `triage` enrichment jobs
+#   ANTHROPIC_API_KEY                  — optional; only the `review` job uses it
 #
-# First-run note: the `claude -p` invocations use the CLI's non-interactive
+# First-run note: the `claude -p` invocation uses the CLI's non-interactive
 # "print mode". Flags for permission handling in CI
 # (`--dangerously-skip-permissions`) can change between CLI versions — if
-# `review`/`triage` fail on their first run, check `claude --help` in the job
-# log against the flags used here before assuming the skill itself is broken.
-# `test` and `triage-baseline` have no such dependency and should work as
-# written.
+# `review` fails on its first run, check `claude --help` in the job log against
+# the flags used here before assuming the skill itself is broken. Every other
+# job is free of that dependency.
 
 name: Playwright Tests
 
-# GITHUB_TOKEN defaults to read-only on repos created since 2023, which made
-# triage-baseline's issues.create() return 403 and fail the job. Default to
-# read-only here and widen only the one job that actually writes.
+# GITHUB_TOKEN defaults to read-only on repos created since 2023, and a job
+# that writes without saying so gets a 403. Default to read-only here and
+# widen only the jobs that actually write.
 permissions:
   contents: read
 
@@ -209,7 +197,8 @@ jobs:
       # Three artifacts rather than one bundle, because they answer different
       # questions: the Playwright HTML report is the one to open first (it needs
       # no Java and embeds traces), Allure is the richer project-standard
-      # report, and the raw results are what the triage jobs below parse.
+      # report, and the raw results are what /detect-flaky and /run-report
+      # reason over locally.
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -303,102 +292,7 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v4
 
-  # ── Tier 0: deterministic failure signal, no AI vendor required ──────────
-  triage-baseline:
-    name: Post failure evidence (no AI required)
-    needs: test
-    if: failure()
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write # files/updates the "[CI] Nightly ... failing" tracking issue
-      pull-requests: write # posts the evidence comment on a PR
-    outputs:
-      issue_number: ${{ steps.post.outputs.issue_number }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: allure-results
-          path: ci-artifacts/allure-results
-        continue-on-error: true
-
-      - name: Extract a failure excerpt from out.txt
-        id: excerpt
-        shell: bash
-        run: |
-          FILE=$(find ci-artifacts/allure-results -name out.txt 2>/dev/null | head -n1)
-          {
-            echo "excerpt<<PLAYWRIGHT_EOF"
-            if [ -n "$FILE" ]; then
-              grep -B2 -A8 -iE "fail|error|timeout" "$FILE" | tail -n 80
-            else
-              echo "No out.txt found in the downloaded artifacts."
-            fi
-            echo "PLAYWRIGHT_EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Post evidence
-        id: post
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const excerpt = `${{ steps.excerpt.outputs.excerpt }}`;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              "### ❌ Playwright run failed",
-              "",
-              `**Workflow run:** ${runUrl}`,
-              "",
-              "**Failure excerpt (out.txt):**",
-              "```",
-              excerpt || "(no excerpt available)",
-              "```",
-              "",
-              "Full Allure results and raw traces/screenshots are attached to the workflow run above.",
-              "",
-              "_Posted automatically, no AI involved — see `docs/architecture.md` §11._",
-            ].join("\n");
-
-            if (context.eventName === "pull_request") {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body,
-              });
-              return;
-            }
-
-            // Not a PR (scheduled/manual run) — file or update a tracked issue.
-            const title = `[CI] Nightly Playwright regression failing`;
-            const existing = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: "open",
-              labels: "needs-triage",
-            });
-            const match = existing.data.find((i) => i.title === title);
-
-            if (match) {
-              await github.rest.issues.createComment({
-                issue_number: match.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body,
-              });
-              core.setOutput("issue_number", match.number);
-            } else {
-              const created = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ["needs-triage"],
-              });
-              core.setOutput("issue_number", created.data.number);
-            }
-
-  # ── Tier 1: optional AI enrichment of what Tier 0 already posted ─────────
+  # ── Optional AI enrichment (skipped cleanly when no key is set) ──────────
   review:
     name: AI review of changed specs
     needs: [test, config]
@@ -452,76 +346,3 @@ jobs:
               repo: context.repo.repo,
               body: `### 🤖 \`/review-tests\`\n\n${body}`,
             });
-
-  triage:
-    name: AI triage on failure (enrichment)
-    needs: [test, triage-baseline, config]
-    if: failure() && needs.config.outputs.has_ai == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g @anthropic-ai/claude-code
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: allure-results
-          path: ci-artifacts/allure-results
-        continue-on-error: true
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: test-results
-          path: ci-artifacts/test-results
-        continue-on-error: true
-
-      - name: Run /triage-failure
-        continue-on-error: true
-        shell: bash
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          claude -p "/triage-failure — evidence is under ci-artifacts/ (allure-results and test-results downloaded from the failed 'test' job)" \
-            --output-format text \
-            --dangerously-skip-permissions > triage-output.md
-
-      - name: Post enrichment
-        continue-on-error: true
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const body = fs.existsSync('triage-output.md')
-              ? fs.readFileSync('triage-output.md', 'utf8')
-              : '_triage-failure did not produce output — check the job log._';
-            const formatted = `### 🚨 \`/triage-failure\` (AI enrichment of the evidence posted above)\n\n${body}`;
-
-            if (context.eventName === 'pull_request') {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: formatted,
-              });
-              return;
-            }
-
-            const issueNumber = '${{ needs.triage-baseline.outputs.issue_number }}';
-            if (issueNumber) {
-              await github.rest.issues.createComment({
-                issue_number: Number(issueNumber),
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: formatted,
-              });
-            } else {
-              await core.summary.addRaw(formatted).write();
-            }

@@ -18,7 +18,7 @@ Only for **locator-class failures**: `TimeoutError` waiting for an element,
 "element not found", strict-mode violation (a locator matches more than one
 element now). **Not** for:
 
-- Assertion failures where the element *was* found but its content/state is
+- Assertion failures where the element _was_ found but its content/state is
   wrong (`toHaveText` mismatch, wrong value, wrong URL). The element existing
   and disagreeing with the test is a behavior difference — a test bug or an
   app bug, not selector rot. Hand it back to the normal `generate-tests` debug
@@ -26,8 +26,8 @@ element now). **Not** for:
 - Navigation failures (wrong page, page never loaded). Investigate the flow
   itself, not a selector.
 
-Healing answers *"does this element still exist under a different selector?"* —
-not *"is the app doing the right thing?"*. Confusing the two is how a real
+Healing answers _"does this element still exist under a different selector?"_ —
+not _"is the app doing the right thing?"_. Confusing the two is how a real
 regression quietly gets papered over.
 
 ## Input
@@ -36,6 +36,7 @@ regression quietly gets papered over.
 failed run.
 
 ## Knowledge Sources
+
 1. `playwright-best-practices` skill — locator priority order every healed
    locator must still respect (IDs > roles > labels > text > CSS), and the
    Self-Healing Policy section (confidence tiers, audit-log requirement).
@@ -48,6 +49,7 @@ failed run.
 ## Process
 
 ### Step 1 — Isolate the failure
+
 Run (or read the last failed run's output for) the target spec. Confirm it's a
 locator-class failure per "What this is for" above — if it isn't, stop and hand
 off instead of proceeding.
@@ -56,13 +58,15 @@ Identify: which Page Object method, the exact locator string that failed, and
 what action/assertion was being attempted when it did.
 
 ### Step 2 — See what the page actually looks like now
+
 Prefer the failing run's **trace** — it has the exact DOM at the moment of
 failure, no re-navigation needed. Otherwise use Playwright MCP to navigate to
 the same state (replay steps up to the failure point) and take **one**
 snapshot. Don't re-snapshot per candidate locator under consideration.
 
 ### Step 3 — Find the semantic match
-Work from the old locator's *purpose* ("the submit button", "the cart total
+
+Work from the old locator's _purpose_ ("the submit button", "the cart total
 cell"), not its literal string. Search the current DOM for whatever now serves
 that purpose, preferring in order:
 
@@ -79,16 +83,17 @@ requires.
 
 ### Step 4 — Judge confidence, then act
 
-| Confidence | When | Action |
-|---|---|---|
-| **High** | Exactly one element unambiguously matches the old locator's role + purpose | Apply the fix, re-run to confirm the test now passes, append a `docs/reports/healing-log.md` entry |
-| **Medium** | Matched by text/label only, or disambiguated by position among similar elements | Apply the fix, re-run to confirm, append the log entry, and call it out explicitly in the report as worth a human glance |
-| **Low** | Multiple equally-plausible candidates, or nothing serves the same purpose anymore | **Apply nothing.** Cross-check the flow against `app-domain`. If the app now contradicts the documented flow, this is a candidate app bug, not selector rot — report it; don't guess a locator to make the red go away |
+| Confidence | When                                                                              | Action                                                                                                                                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **High**   | Exactly one element unambiguously matches the old locator's role + purpose        | Apply the fix, re-run to confirm the test now passes, append a `docs/reports/healing-log.md` entry                                                                                                                     |
+| **Medium** | Matched by text/label only, or disambiguated by position among similar elements   | Apply the fix, re-run to confirm, append the log entry, and call it out explicitly in the report as worth a human glance                                                                                               |
+| **Low**    | Multiple equally-plausible candidates, or nothing serves the same purpose anymore | **Apply nothing.** Cross-check the flow against `app-domain`. If the app now contradicts the documented flow, this is a candidate app bug, not selector rot — report it; don't guess a locator to make the red go away |
 
 Cap at one healing attempt per locator per invocation — if the first proposed
 fix doesn't make the test pass, stop and report rather than guessing again.
 
 ### Step 5 — Record it
+
 Every High/Medium fix gets one row in `docs/reports/healing-log.md` (create it with
 this header if it doesn't exist yet):
 
@@ -96,7 +101,7 @@ this header if it doesn't exist yet):
 # Healing Log
 
 | Date | Spec / Page Object | Old locator | New locator | Confidence | Reason |
-|------|--------------------|--------------|-------------|------------|--------|
+| ---- | ------------------ | ----------- | ----------- | ---------- | ------ |
 ```
 
 No silent fixes. A locator that was auto-relocated and turns out to be the
@@ -104,7 +109,9 @@ wrong element should be traceable from this log, not discovered by accident
 weeks later.
 
 ## Output
+
 Report:
+
 - Which locators were healed (old → new), confidence, and file(s) changed.
 - Which were left unhealed (Low confidence) and why, including any suspected
   app bug.
@@ -134,11 +141,13 @@ Report:
 - Anything that turned out to be an app bug is reported as one, with the test
   left untouched.
 
-## When *not* to use this skill
+## When _not_ to use this skill
 
 - The element was found and the assertion disagreed → that is a behaviour
-  difference, not selector rot. Use `/triage-failure` to classify it.
+  difference, not selector rot. Check it against `app-domain`: if the app now
+  contradicts the documented rule it is an app bug, otherwise the test is stale.
 - The page never loaded or the URL is wrong → investigate the flow or the
   environment, not a selector.
-- You do not yet know which class of failure you have → `/triage-failure`
-  first; it routes back here if the answer is selector rot.
+- You do not yet know which class of failure you have → read the trace and
+  screenshot in the Playwright HTML report first; come back here only once the
+  answer is selector rot.

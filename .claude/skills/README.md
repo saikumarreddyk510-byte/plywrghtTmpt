@@ -12,10 +12,10 @@ one of them be invoked alone.
 
 These are `user-invocable: false`. Every working skill reads at least one.
 
-| Skill | What it holds | Who must keep it true |
-|---|---|---|
-| `app-domain` | Flows, business rules, data models, verified selectors — the only source of truth about the app | A human, with `/explore-app` drafting proposals |
-| `playwright-best-practices` | Locator priority, POM conventions, wait strategy, logging, self-healing policy, anti-patterns | A human; `/review-tests` scores against it |
+| Skill                       | What it holds                                                                                   | Who must keep it true                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `app-domain`                | Flows, business rules, data models, verified selectors — the only source of truth about the app | A human, with `/explore-app` drafting proposals |
+| `playwright-best-practices` | Locator priority, POM conventions, wait strategy, logging, self-healing policy, anti-patterns   | A human; `/review-tests` scores against it      |
 
 **`app-domain` is the load-bearing file.** Skills that reason from an empty
 domain produce confident guesses, which is why several of them refuse to run
@@ -23,27 +23,26 @@ until it is filled in.
 
 ## Authoring — scenario to passing spec
 
-| Skill | In → Out |
-|---|---|
-| `/explore-app` | Live app → `docs/pipeline/domain-draft.md` + proposed TCs. Bootstraps `app-domain`; proposes, never overwrites |
-| `/create-scenarios` | `app-domain` → TC blocks in `docs/pipeline/test-scenarios.md`, via six lenses |
-| `/test-strategy` | Scenarios → layer assignments in `docs/pipeline/test-strategy.md` |
-| `/generate-tests` | E2E rows → Page Object + spec + config, run until genuinely green |
-| `/generate-api-tests` | API rows → `playwright/api/*.api.spec.ts` |
-| `/generate-testdata` | Data models → fixtures plus seeded boundary and adversarial cases |
-| `/review-tests` | Specs → `docs/reports/review-report.md`. Read-only by construction |
-| **`/ship-test`** | **One scenario → one reviewed, passing spec.** Chains the above through isolated subagents |
+| Skill                 | In → Out                                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `/explore-app`        | Live app → `docs/pipeline/domain-draft.md` + proposed TCs. Bootstraps `app-domain`; proposes, never overwrites |
+| `/create-scenarios`   | `app-domain` → TC blocks in `docs/pipeline/test-scenarios.md`, via six lenses                                  |
+| `/test-strategy`      | Scenarios → layer assignments in `docs/pipeline/test-strategy.md`                                              |
+| `/generate-tests`     | E2E rows → Page Object + spec + config, run until genuinely green                                              |
+| `/generate-api-tests` | API rows → `playwright/api/*.api.spec.ts`                                                                      |
+| `/generate-testdata`  | Data models → fixtures plus seeded boundary and adversarial cases                                              |
+| `/review-tests`       | Specs → `docs/reports/review-report.md`. Read-only by construction                                             |
+| **`/ship-test`**      | **One scenario → one reviewed, passing spec.** Chains the above through isolated subagents                     |
 
 ## Maintenance — red suite to honest report
 
-| Skill | In → Out |
-|---|---|
-| `/triage-failure` | A red run → each failure classified: selector rot, test bug, app bug, or flake candidate |
-| `/heal-test` | Selector rot → relocated locators, logged to `docs/reports/healing-log.md`. Never applies at low confidence |
-| `/detect-flaky` | `.test-history/runs.jsonl` → genuine flakes separated from consistent failures, with a fix or a receipted quarantine |
-| `/run-report` | Last run → `docs/reports/run-report.md`, in business language, for people who will never open Allure |
-| `/audit-a11y` | Real pages → WCAG-mapped findings ranked by user impact, with the gaps stated |
-| **`/autopilot`** | **Run → triage → fix → prove → report**, in one prompt, under hard limits |
+| Skill            | In → Out                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `/heal-test`     | Selector rot → relocated locators, logged to `docs/reports/healing-log.md`. Never applies at low confidence          |
+| `/detect-flaky`  | `.test-history/runs.jsonl` → genuine flakes separated from consistent failures, with a fix or a receipted quarantine |
+| `/run-report`    | Last run → `docs/reports/run-report.md`, in business language, for people who will never open Allure                 |
+| `/audit-a11y`    | Real pages → WCAG-mapped findings ranked by user impact, with the gaps stated                                        |
+| **`/autopilot`** | **Run → classify → fix → prove → report**, in one prompt, under hard limits                                          |
 
 ## Two entry points
 

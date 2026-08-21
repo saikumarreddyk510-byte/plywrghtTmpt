@@ -32,9 +32,10 @@ Skip this if you're continuing to test the Client app — that's already done.
 ## 3. Scenario → passing test (repeat for every new scenario)
 
 **One-shot (recommended):**
+
 1. Write the scenario in plain English — what a user does, what should
-   happen. Example: *"A logged-in user removes a product from the cart and
-   the total updates to $0."*
+   happen. Example: _"A logged-in user removes a product from the cart and
+   the total updates to $0."_
 2. Run it:
    - Claude Code: `/ship-test <scenario>` (or just paste the scenario as a
      normal message — the skill auto-triggers)
@@ -44,6 +45,7 @@ Skip this if you're continuing to test the Client app — that's already done.
    score. Done.
 
 **Step by step (more control over each stage):**
+
 1. `/create-scenarios <feature>` → writes/updates `docs/pipeline/test-scenarios.md`
 2. `/test-strategy <feature>` → writes/updates `docs/pipeline/test-strategy.md`
 3. `/generate-tests <feature>` → writes the Page Object + spec, verifies
@@ -55,9 +57,10 @@ a whole feature, then `/ship-test TC-014` to implement one scenario from it
 at a time.
 
 **Worked example already in this repo:** `playwright/e2e/clientLogin.spec.ts`
-+ `playwright/support/pageObjects/clientLogin-po.ts` — TC-001 (valid login)
-and TC-301 (invalid login), built exactly this way, verified against the live
-site. Use it as the pattern to match.
+
+- `playwright/support/pageObjects/clientLogin-po.ts` — TC-001 (valid login)
+  and TC-301 (invalid login), built exactly this way, verified against the live
+  site. Use it as the pattern to match.
 
 ## 4. Running what already exists
 
@@ -74,12 +77,13 @@ npm run history:analyze                  # stability stats across recent runs
 
 ## 5. When something breaks later
 
-- **Just want it handled?** → `/autopilot` — runs the suite, triages every
+- **Just want it handled?** → `/autopilot` — runs the suite, classifies every
   failure, heals selector rot, fixes test bugs, re-runs to prove the fix, and
   writes `docs/reports/run-report.md`. It never reaches green by weakening a test, and
   it files app bugs to `docs/reports/app-bugs.md` instead of absorbing them.
 - Selector stopped matching after an app change → `/heal-test [spec]`
-- A run went red and you don't know why → `/triage-failure [spec]`
+- A run went red and you don't know why → open its trace in the Playwright HTML
+  report (`playwright-report/index.html`, or the CI artifact)
 - "It fails randomly" → `/detect-flaky` — it reads the run history, so it can
   tell a genuinely flaky test from one that has simply been failing all week
 - Someone non-technical needs the state of the suite → `/run-report`
@@ -108,6 +112,7 @@ documented:
 ```
 
 Rules of thumb:
+
 - If a rule can be checked without a browser, it belongs at API — push it down.
 - Fuzz and boundary suites are regression-tier; keep them out of smoke so the
   PR gate stays fast.

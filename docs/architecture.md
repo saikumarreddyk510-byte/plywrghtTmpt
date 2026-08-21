@@ -11,15 +11,15 @@ you're testing next — see §10 for the bootstrap checklist.
 > [`docs/architecture.html`](./architecture.html) — open it in a browser. This
 > file is the durable, plain-text copy (GitHub renders the Mermaid diagrams
 > below natively). Everything below describes what's **built**; for what's
-> proposed but not yet built — self-healing locators, failure triage, CI
+> proposed but not yet built — self-healing locators, CI
 > wiring, and more — see [`docs/roadmap.md`](./roadmap.md).
 
 ## 1. Two layers, on purpose
 
-| Layer | What it is | Status |
-|---|---|---|
+| Layer               | What it is                                                                                                                                                                              | Status                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | **Execution layer** | The Playwright + TypeScript framework itself: POM, Allure, logging, smoke/regression gate, SauceLabs. Runs tests. Has no opinion about AI, and no opinion about which app it's testing. | Already built (`README.md`) |
-| **Authoring layer** | Claude Code skills + Playwright MCP + subagents. Writes the tests that the execution layer runs, using domain knowledge supplied per project (§10). | This document |
+| **Authoring layer** | Claude Code skills + Playwright MCP + subagents. Writes the tests that the execution layer runs, using domain knowledge supplied per project (§10).                                     | This document               |
 
 Keeping these separate matters: the execution layer works with zero AI involved
 (`npm run pw:test`), and the authoring layer only ever produces files that follow
@@ -31,7 +31,7 @@ layer hardcodes an app; both take it as configuration.
 ```mermaid
 flowchart TD
     P["Prompt: one scenario"] --> O["/ship-test — orchestrator (this session's context)"]
-    O -->|inline, no subagent| T["Step 1 Triage:\nformalize TC · classify layer · grep for reuse"]
+    O -->|inline, no subagent| T["Step 1 Classify:\nformalize TC · classify layer · grep for reuse"]
     T -->|"foreground subagent, default model"| B["Step 2 Build:\nwrite PO + spec + config\nverify via Playwright MCP\nrun in real browser\ndebug loop (≤3 tries)"]
     B -->|"foreground subagent, scoped"| R["Step 3 Review:\nchecklist against the NEW file only"]
     R -->|CRITICAL found| F["Step 4 Fix\n(one round)"]
@@ -52,22 +52,22 @@ that.
 
 ## 3. Skill roster
 
-| Skill | Invocation | Reads | Writes |
-|---|---|---|---|
-| `app-domain` | never directly (`user-invocable: false`) | — | — (ships empty; fill in per project, §10) |
-| `playwright-best-practices` | never directly (`user-invocable: false`) | — | — (reference only) |
-| `create-scenarios` | `/create-scenarios [feature]` | `app-domain`, existing specs | `docs/pipeline/test-scenarios.md` |
-| `test-strategy` | `/test-strategy [feature]` | `docs/pipeline/test-scenarios.md`, `app-domain` | `docs/pipeline/test-strategy.md` |
-| `generate-tests` | `/generate-tests [flow]` | best-practices, domain, strategy doc, Playwright MCP | spec + PO + config entry |
-| `review-tests` | `/review-tests [file]` | best-practices, the spec(s) under review | `docs/reports/review-report.md` |
-| **`ship-test`** | **`/ship-test <scenario>`**, or just paste a scenario | orchestrates the four above via subagents | everything above, end to end |
-| `explore-app` | `/explore-app [url]` | the live app via MCP, current `app-domain` | `docs/pipeline/domain-draft.md`, proposed TCs, `docs/pipeline/exploration-findings.md` |
-| `generate-api-tests` | `/generate-api-tests [endpoint]` | strategy doc (API rows), `app-domain`, `apiClient` | `playwright/api/*.api.spec.ts` |
-| `generate-testdata` | `/generate-testdata [model]` | `app-domain` data models, `dataFactory` | `playwright/testdata/*.json`, data-driven specs |
-| `detect-flaky` | `/detect-flaky [spec]` | `.test-history/runs.jsonl` via `analyzeHistory` | `docs/reports/flaky-log.md`, quarantine edits |
-| `run-report` | `/run-report` | run history, `out.txt`, `app-domain` | `docs/reports/run-report.md` |
-| `audit-a11y` | `/audit-a11y [page]` | `docs/reports/a11y/*.json`, live app via MCP | `docs/reports/a11y-report.md` |
-| **`autopilot`** | **`/autopilot [scope]`** | orchestrates run → triage → heal → re-run → report | `docs/reports/run-report.md`, `docs/reports/healing-log.md`, `docs/reports/app-bugs.md` |
+| Skill                       | Invocation                                            | Reads                                                | Writes                                                                                  |
+| --------------------------- | ----------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `app-domain`                | never directly (`user-invocable: false`)              | —                                                    | — (ships empty; fill in per project, §10)                                               |
+| `playwright-best-practices` | never directly (`user-invocable: false`)              | —                                                    | — (reference only)                                                                      |
+| `create-scenarios`          | `/create-scenarios [feature]`                         | `app-domain`, existing specs                         | `docs/pipeline/test-scenarios.md`                                                       |
+| `test-strategy`             | `/test-strategy [feature]`                            | `docs/pipeline/test-scenarios.md`, `app-domain`      | `docs/pipeline/test-strategy.md`                                                        |
+| `generate-tests`            | `/generate-tests [flow]`                              | best-practices, domain, strategy doc, Playwright MCP | spec + PO + config entry                                                                |
+| `review-tests`              | `/review-tests [file]`                                | best-practices, the spec(s) under review             | `docs/reports/review-report.md`                                                         |
+| **`ship-test`**             | **`/ship-test <scenario>`**, or just paste a scenario | orchestrates the four above via subagents            | everything above, end to end                                                            |
+| `explore-app`               | `/explore-app [url]`                                  | the live app via MCP, current `app-domain`           | `docs/pipeline/domain-draft.md`, proposed TCs, `docs/pipeline/exploration-findings.md`  |
+| `generate-api-tests`        | `/generate-api-tests [endpoint]`                      | strategy doc (API rows), `app-domain`, `apiClient`   | `playwright/api/*.api.spec.ts`                                                          |
+| `generate-testdata`         | `/generate-testdata [model]`                          | `app-domain` data models, `dataFactory`              | `playwright/testdata/*.json`, data-driven specs                                         |
+| `detect-flaky`              | `/detect-flaky [spec]`                                | `.test-history/runs.jsonl` via `analyzeHistory`      | `docs/reports/flaky-log.md`, quarantine edits                                           |
+| `run-report`                | `/run-report`                                         | run history, `out.txt`, `app-domain`                 | `docs/reports/run-report.md`                                                            |
+| `audit-a11y`                | `/audit-a11y [page]`                                  | `docs/reports/a11y/*.json`, live app via MCP         | `docs/reports/a11y-report.md`                                                           |
+| **`autopilot`**             | **`/autopilot [scope]`**                              | orchestrates run → classify → heal → re-run → report | `docs/reports/run-report.md`, `docs/reports/healing-log.md`, `docs/reports/app-bugs.md` |
 
 The two knowledge skills (`app-domain`, `playwright-best-practices`) are marked
 `user-invocable: false` deliberately — they're not commands, they're shared
@@ -89,16 +89,16 @@ the `heal-test` skill instead of guessing-and-retrying the same selector:
 1. Read the failure's **trace** (`trace: "retain-on-failure"` in
    `playwright.config.ts`) — the exact DOM at the moment of failure, no
    re-navigation needed.
-2. Re-locate the element by the old locator's *purpose*, not its literal
+2. Re-locate the element by the old locator's _purpose_, not its literal
    string — preferring a new stable identifier, then role + accessible name,
    then label/placeholder text, then visible text — never downgrading to a
    bare positional selector.
 3. Judge confidence, then act:
 
-| Confidence | Action |
-|---|---|
-| High — one unambiguous match | Apply, re-run to confirm, log it |
-| Medium — text/label or position-disambiguated match | Apply, re-run to confirm, log it, flag for a human glance |
+| Confidence                                                   | Action                                                                             |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| High — one unambiguous match                                 | Apply, re-run to confirm, log it                                                   |
+| Medium — text/label or position-disambiguated match          | Apply, re-run to confirm, log it, flag for a human glance                          |
 | Low — multiple candidates or nothing serves the same purpose | Apply nothing. Cross-check `app-domain` — this may be an app bug, not selector rot |
 
 Every applied fix — High or Medium — gets one row in `docs/reports/healing-log.md`
@@ -145,7 +145,7 @@ flowchart LR
 **Named, tool-restricted agents, not just a generic spawn.** Steps 2 and 3
 run as `test-builder` and `test-reviewer` (`.claude/agents/*.md`) rather than
 the built-in `general-purpose` type. The distinction that matters:
-`test-reviewer`'s tool list has no `Edit` and no `Bash` — it is *structurally*
+`test-reviewer`'s tool list has no `Edit` and no `Bash` — it is _structurally_
 incapable of modifying the code it reviews or running anything, not just
 instructed not to. "Review proposes, it doesn't silently rewrite" (§9,
 `docs/roadmap.md`'s guardrail list) is enforced at the tool-permission layer
@@ -158,12 +158,12 @@ rather than re-describing it, for the same reason the Copilot prompt files do
 
 ## 6. Model tiering
 
-| Step | Work | Model |
-|---|---|---|
-| 1. Triage | Template-fill a TC block, one-line layer call, grep for reuse | inline, no separate call |
-| 2. Build | Selector verification, code generation, real-browser debugging | default (Sonnet) — never downgrade |
-| 3. Review | Checklist match against best practices | default, scoped to the new file — pass `--fast` for a cheaper model when speed matters more than a second opinion |
-| 4. Fix | Same as Build | default |
+| Step        | Work                                                           | Model                                                                                                             |
+| ----------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1. Classify | Template-fill a TC block, one-line layer call, grep for reuse  | inline, no separate call                                                                                          |
+| 2. Build    | Selector verification, code generation, real-browser debugging | default (Sonnet) — never downgrade                                                                                |
+| 3. Review   | Checklist match against best practices                         | default, scoped to the new file — pass `--fast` for a cheaper model when speed matters more than a second opinion |
+| 4. Fix      | Same as Build                                                  | default                                                                                                           |
 
 The rule of thumb: **downgrade scope before downgrading model.** Scoping review to
 one file instead of the whole suite is a safe, large token cut; scoping the model
@@ -198,16 +198,16 @@ burns through tokens for no benefit.
 
 ## 8. Token & speed levers — summary
 
-| Lever | Where |
-|---|---|
-| Subagent-per-stage context isolation | `ship-test` steps 2–3 |
-| Inline fast-path for scenario + layer classification | `ship-test` step 1 |
-| Grep/glob for reuse, never a full-folder read | `ship-test` step 1, `generate-tests` |
-| One example file to mirror, not "read all existing specs" | `ship-test` step 2 |
-| Structural determinism — copy the known-good skeleton, vary only the specifics | `playwright-best-practices` §3–4 |
-| One MCP snapshot per page, not one per action | `ship-test` step 2 |
-| Review scoped to the new file, not the whole suite | `ship-test` step 3 |
-| Model downgrade as an opt-in flag, not a default | `ship-test` steps 1 &amp; 3 |
+| Lever                                                                          | Where                                |
+| ------------------------------------------------------------------------------ | ------------------------------------ |
+| Subagent-per-stage context isolation                                           | `ship-test` steps 2–3                |
+| Inline fast-path for scenario + layer classification                           | `ship-test` step 1                   |
+| Grep/glob for reuse, never a full-folder read                                  | `ship-test` step 1, `generate-tests` |
+| One example file to mirror, not "read all existing specs"                      | `ship-test` step 2                   |
+| Structural determinism — copy the known-good skeleton, vary only the specifics | `playwright-best-practices` §3–4     |
+| One MCP snapshot per page, not one per action                                  | `ship-test` step 2                   |
+| Review scoped to the new file, not the whole suite                             | `ship-test` step 3                   |
+| Model downgrade as an opt-in flag, not a default                               | `ship-test` steps 1 &amp; 3          |
 
 ## 9. One-shot vs manual mode
 
@@ -246,17 +246,20 @@ The same checklist lives in `CLAUDE.md`, which Claude Code reads automatically
 at session start — this copy is here so the architecture document stays
 self-contained.
 
-## 11. CI &amp; failure triage
+## 11. CI &amp; CD
 
-Everything through §10 runs when a human types a command. This section is
-what runs on its own: `.github/workflows/playwright.yml`, three layers, none
-of them a hard dependency on the ones above.
+Everything through §10 runs when a human types a command. This section is what
+runs on its own: `.github/workflows/playwright.yml` (CI) and
+`.github/workflows/e2e-gate.yml` (CD). [`cicd.md`](./cicd.md) is the operational
+write-up; this is the design rationale.
 
 ```
-pull_request  ─┬─▶ test (windows-latest, smoke)     ─┬─▶ review           (changed specs → PR comment, AI, optional)
-               │                                      │
-schedule/manual┴─▶ test (windows-latest, regression) ─┼─▶ triage-baseline  (evidence → PR comment / tracked issue, no AI)
-                                                       └─▶ triage           (enriches triage-baseline's post, AI, optional)
+push (any branch)  ─▶ FULL   ─┐
+pull_request       ─▶ smoke  ─┼─▶ test (windows-latest) ─┬─▶ HTML report artifacts
+schedule 03:00 UTC ─▶ smoke  ─┤                          └─▶ publish-report (Pages, opt-in)
+workflow_dispatch  ─▶ either ─┘
+                              lint-skills · quality (lint + typecheck)
+                              review (changed specs → PR comment, AI, optional)
 ```
 
 - **`test`** is deterministic — `npm run pw:test[:smoke]`, nothing AI about
@@ -264,32 +267,56 @@ schedule/manual┴─▶ test (windows-latest, regression) ─┼─▶ triage-b
   logging path (`C:\LogFolder\...`) and Allure teardown are Windows-specific
   by design (§7, `CLAUDE.md`) — this matches local dev rather than working
   around it.
-- **`triage-baseline`** runs whenever `test` fails, needs no AI vendor, and
-  posts the raw evidence — failing test names, an `out.txt` excerpt, links to
-  the uploaded Allure/trace artifacts — as a PR comment, or (for a nightly
-  run with no PR to comment on) a tracked GitHub issue labeled
-  `needs-triage`, reused across nights rather than duplicated. This is the
-  value floor: CI produces a real signal with **no AI vendor configured
-  anywhere**.
-- **`review`** (optional, AI) runs `review-tests` against exactly the
-  spec/PO files changed in the PR (the same file-scoping discipline as §8)
-  and posts the result as a PR comment.
-- **`triage`** (optional, AI) runs only when `test` fails, downloads that
-  run's Allure results and raw traces, and hands them to `triage-failure` —
-  which classifies the failure (selector rot → `heal-test`, test bug →
-  `generate-tests`, app bug → filed and left untouched, flake → flagged,
-  never silently dismissed) — then appends its verdict to whatever
-  `triage-baseline` already posted (same PR comment thread, or the same
-  tracked issue) rather than starting a second, disconnected conversation.
+- **Push runs the FULL suite** deliberately. The code you just pushed is
+  exercised together with every test already in the repo, so a new spec cannot
+  pass in isolation while quietly breaking an existing one. PRs get smoke for
+  speed; the merge push then runs full. The daily smoke catches app-side drift
+  on days nobody pushed — these specs drive live applications, which break
+  without anyone committing anything.
+- **The failure signal is the artifact, not a bot.** Every run uploads the
+  Playwright HTML report, which embeds the trace, screenshot and error for each
+  failing test. A red run is diagnosable from the artifact alone, with **no AI
+  vendor configured anywhere** and nothing posting comments on your behalf.
+- **`quality`** runs the same `lint` + `typecheck` that `.githooks/pre-push`
+  runs locally. The hook gives fast feedback; this job enforces it, because a
+  hook is advisory — `--no-verify` skips it and a fresh clone has none until
+  someone runs `npm install`.
+- **`review`** (optional, AI) runs `review-tests` against exactly the spec/PO
+  files changed in the PR (the same file-scoping discipline as §8) and posts
+  the result as a PR comment.
 
-Both AI jobs require `ANTHROPIC_API_KEY` as a repo secret and are gated on it
-being present (`secrets.ANTHROPIC_API_KEY != ''`) — missing it skips them
-cleanly rather than failing the build, and `triage-baseline` has already
-posted something useful either way. Both AI jobs also run with
-`continue-on-error: true` on the Claude Code invocation itself: an AI job that
-fails to run is a missed comment, never a red PR check by itself — the same
-"CI auto-comments, it doesn't auto-merge" guardrail from `docs/roadmap.md`
-applies here at the workflow level, not just in the skill instructions.
+**One sharp edge worth knowing:** `secrets` is **not** a context GitHub allows
+in a job-level `if:` — only `github`, `needs`, `vars` and `inputs`. Referencing
+it there ("Unrecognized named-value: 'secrets'") makes the _entire workflow
+file_ fail to parse, taking the test jobs down with it. A small `config` job
+resolves `ANTHROPIC_API_KEY` once where `env` is legal, and `review` gates on
+its output. A missing key skips `review` cleanly rather than failing the build,
+and it also runs `continue-on-error: true`: an AI job that fails to run is a
+missed comment, never a red PR check by itself — the same "CI auto-comments, it
+doesn't auto-merge" guardrail from [`roadmap.md`](./roadmap.md), applied at the
+workflow level rather than only in skill instructions.
+
+**The CD half.** A test framework rarely has a deploy pipeline of its own; it
+becomes a required step in the pipeline of the thing it tests:
+
+```
+app repo:  build → deploy to staging → [ e2e-gate.yml ] → promote to prod
+                                              ↑ decides
+```
+
+`e2e-gate.yml` is callable three ways — `workflow_call` (preferred: the caller
+_blocks_ on the result, which is what makes it a gate rather than a
+notification), `repository_dispatch` (for deploy systems with no Actions of
+their own; fire-and-forget, so it cannot block), and manual dispatch. Job-level
+`environment:` resolves `BASE_URL` and credentials per target, so one workflow
+tests whichever environment it is handed and production credentials never
+resolve during a qa run. It refuses to run without an explicit environment
+rather than defaulting to one.
+
+The second CD responsibility is delivering the artifact this repo actually
+produces: `publish-report` deploys the HTML report to GitHub Pages. It is off
+unless you opt in, because reports carry test names, target URLs and failure
+screenshots.
 
 ## 12. Driving from Copilot instead of Claude Code
 
@@ -313,7 +340,7 @@ pipeline for no benefit). Every Copilot-facing file added for this is a
 ```
 
 One `*.prompt.md` per pipeline stage (`create-scenarios`, `test-strategy`,
-`generate-tests`, `review-tests`, `heal-test`, `triage-failure`, `ship-test`),
+`generate-tests`, `review-tests`, `heal-test`, `ship-test`),
 invoked as `/name` in Copilot Chat's Agent mode — the same commands, same
 file outputs, same conventions as the Claude Code skills they point at. Edit
 the process once, in `.claude/skills/`, and both tools follow the update; a
@@ -333,14 +360,14 @@ writing. Driven from Copilot, the same five steps run sequentially in one
 chat instead; the process and file outputs are identical, the token-isolation
 benefit in §5 just doesn't apply to that path yet.
 
-**Where CI fits:** §11's `triage-baseline` job already produces a real signal
-with zero AI vendor configured — that was built provider-agnostic, not
-Copilot-specific, on the same principle as this section. GitHub's Copilot
-coding agent (assign-to-`@copilot` on an issue) is a real option for picking
-up the issue `triage-baseline` files on a nightly failure, but it's
-issue-driven and asynchronous, not a scriptable "run this step in this job"
-call the way `claude -p` is — so it's a manual assignment, not automated in
-the workflow.
+**Where CI fits:** §11's `test` and `quality` jobs, and the HTML report
+artifacts they upload, produce a real signal with zero AI vendor configured —
+that was built provider-agnostic, not Copilot-specific, on the same principle
+as this section. GitHub's Copilot coding agent (assign-to-`@copilot` on an
+issue) is a real option for picking up a failure you have filed by hand, but
+it's issue-driven and asynchronous, not a scriptable "run this step in this
+job" call the way `claude -p` is — so it's a manual assignment, not automated
+in the workflow.
 
 ---
 
@@ -351,15 +378,15 @@ the workflow.
 spends its life:
 
 ```
-run → triage → fix what is safely fixable → re-run to prove it → report
+run → classify → fix what is safely fixable → re-run to prove it → report
   ↑                                                                  │
   └────────────── nightly CI, or one prompt from a human ────────────┘
 ```
 
 It is an orchestrator in the §5 sense — cheap steps inline, expensive steps in
 subagents — and it reuses the existing skills rather than reimplementing them:
-`triage-failure` for the diagnosis, `heal-test` for selector rot,
-`generate-tests` for test bugs, `run-report` for the digest.
+`heal-test` for selector rot, `generate-tests` for test bugs, `run-report`
+for the digest.
 
 What makes it safe to point at a real suite is its hard limits, which are part
 of the skill, not advice in a doc:
@@ -396,10 +423,10 @@ Two deliberate design points:
 
 - **The arithmetic is code, not judgement.** Flip rate is not a matter of
   opinion, so the skills do not recompute it from raw JSONL — they read the
-  script's output and spend their reasoning on *why* a test flips. Same
+  script's output and spend their reasoning on _why_ a test flips. Same
   numbers every time, from anyone.
 - **Flip rate, not failure count, is the flakiness signal.** A test that fails
-  every run is broken, not flaky, and needs `/triage-failure`, not a
+  every run is broken, not flaky, and needs a real fix, not a
   quarantine. Conflating the two is how real regressions get dismissed as
   "just flaky".
 
@@ -412,11 +439,11 @@ both ran the suite do not conflict.
 and until now nothing implemented them — the documented pyramid was an
 ice-cream cone in practice. Three additions close that:
 
-| Layer | What runs it | Where the code is |
-|---|---|---|
-| API / Integration | `/generate-api-tests` → `npm run pw:test:api` | `playwright/api/*.api.spec.ts`, `support/api/apiClient.ts` |
-| Data / fuzz (cross-layer) | `/generate-testdata` | `support/data/dataFactory.ts` |
-| Accessibility | `/audit-a11y` → `npm run pw:test:a11y` | `support/a11y/a11yAudit.ts` |
+| Layer                     | What runs it                                  | Where the code is                                          |
+| ------------------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| API / Integration         | `/generate-api-tests` → `npm run pw:test:api` | `playwright/api/*.api.spec.ts`, `support/api/apiClient.ts` |
+| Data / fuzz (cross-layer) | `/generate-testdata`                          | `support/data/dataFactory.ts`                              |
+| Accessibility             | `/audit-a11y` → `npm run pw:test:a11y`        | `support/a11y/a11yAudit.ts`                                |
 
 `apiClient` logs through the same `comFunc` helpers as the Page Objects, so an
 API failure reads identically to a UI failure in `out.txt` and Allure — one
@@ -455,4 +482,3 @@ debugging tests written against a hallucinated business rule.
 `[CONFLICT]` items — where the documented domain and the live app disagree —
 are never auto-resolved. That disagreement is either a stale doc or a real
 regression, and only a human knows which.
-

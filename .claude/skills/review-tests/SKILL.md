@@ -46,45 +46,54 @@ is no longer an independent check on it.
 ## Review checklist
 
 ### Coverage
+
 - [ ] Every TC-ID assigned to this file in `docs/pipeline/test-strategy.md` is implemented
 - [ ] Happy path, negative path, and edge cases are all present
 - [ ] No duplicate tests
 
 ### Required boilerplate
+
 - [ ] `setPage(page)` is the first line of `beforeEach`
 - [ ] `page.on("pageerror", () => {})` is present
 - [ ] Every step logs via `comFunc.reportMessage*`
 
 ### Selectors
+
 - [ ] No XPath, no long positional CSS chains
 - [ ] Priority order from `playwright-best-practices` §2 respected
 - [ ] Selectors are not position-dependent
 
 ### Assertions
+
 - [ ] Every test has at least one meaningful `expect()`
 - [ ] Assertions check a user-visible outcome, not an implementation detail
 - [ ] The assertion actually verifies the business rule the test claims
 - [ ] Timeouts explicit and reasonable (10_000 ms default)
 
 ### Data
+
 - [ ] No hardcoded credentials or fixtures in specs or Page Objects
 - [ ] All data read from `playwright/testdata/*.json` or `dataFactory`
 
 ### Page Objects
+
 - [ ] No `page.locator()` in spec files
 - [ ] Page Object methods use `this.page()`, never a threaded page parameter
 - [ ] Methods log via `comFunc.reportMessage*`
 
 ### Reliability
+
 - [ ] No `page.waitForTimeout()`
 - [ ] Waits target the real post-condition (`waitForURL` / `waitFor` / `expect`)
 - [ ] Each test is independent and leaves no state behind
 
 ### Config
+
 - [ ] A project block exists in `playwright.config.ts`
 - [ ] Its `testMatch` pattern actually matches the spec
 
 ### Self-healing — only if this file appears in `docs/reports/healing-log.md`
+
 - [ ] Every healed locator still respects the §2 priority order — a heal must
       never downgrade locator quality
 - [ ] Every applied heal has a matching log row; no undocumented locator changes
@@ -98,16 +107,19 @@ Write **`docs/reports/review-report.md`** and report back only the score and the
 ## <filename>
 
 ### What's good
+
 - ...
 
 ### Issues found
-| Line | Severity | Current code | Rule violated | Fix |
-|------|----------|--------------|---------------|-----|
-| 23 | [CRITICAL] | `await page.waitForTimeout(2000)` | best-practices §7 | `await locator.waitFor({ state: "visible" })` |
+
+| Line | Severity   | Current code                      | Rule violated     | Fix                                           |
+| ---- | ---------- | --------------------------------- | ----------------- | --------------------------------------------- |
+| 23   | [CRITICAL] | `await page.waitForTimeout(2000)` | best-practices §7 | `await locator.waitFor({ state: "visible" })` |
 
 ### Score: X/10
 
 ### Recommended fixes, in priority order
+
 1. [CRITICAL] ...
 ```
 
@@ -138,10 +150,11 @@ naming.
 - The summary back to the caller lists only score plus
   `[CRITICAL]`/`[IMPORTANT]` items.
 
-## When *not* to use this skill
+## When _not_ to use this skill
 
-- You want the findings *fixed* → `/generate-tests` (or `/ship-test`, which
+- You want the findings _fixed_ → `/generate-tests` (or `/ship-test`, which
   chains build and review and applies critical fixes once).
-- The spec is failing and you want to know why → `/triage-failure`; a review
-  reads code, it does not diagnose a red run.
+- The spec is failing and you want to know why → read the run's trace and
+  screenshot in the Playwright HTML report; a review reads code, it does not
+  diagnose a red run.
 - The spec fails on a locator only → `/heal-test`.

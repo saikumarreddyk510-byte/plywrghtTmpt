@@ -16,7 +16,7 @@ import { allureResultsDir } from "./playwright/support/reporting/allureRunContex
  *     which is what /detect-flaky and /run-report reason over across runs
  *   - globalTeardown generates the Allure HTML report
  *   - trace: retain-on-failure — gives the `heal-test` skill (and CI failure
- *     triage later) the exact DOM at the moment of failure without having to
+ *     diagnosis later) the exact DOM at the moment of failure without having to
  *     re-navigate the live app to reproduce it
  *
  * Add a project block per authenticated slice following the

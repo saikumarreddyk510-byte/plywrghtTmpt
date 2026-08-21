@@ -27,10 +27,10 @@ oka roju panii, dhaanini **maintain cheyyadam** years panii.
 
 Idi confusion ki main reason, so clear ga:
 
-| Layer | Enti idi | Ekkada undi |
-|---|---|---|
-| **Framework** | Normal Playwright + TypeScript code. AI lekapoyina idi pani chestundi. | `playwright/` folder |
-| **AI Pipeline** | Skills — AI ki "ela pani cheyyalo" cheppe instruction files | `.claude/skills/` folder |
+| Layer           | Enti idi                                                               | Ekkada undi              |
+| --------------- | ---------------------------------------------------------------------- | ------------------------ |
+| **Framework**   | Normal Playwright + TypeScript code. AI lekapoyina idi pani chestundi. | `playwright/` folder     |
+| **AI Pipeline** | Skills — AI ki "ela pani cheyyalo" cheppe instruction files            | `.claude/skills/` folder |
 
 <p><span style="color:#C92A2A;"><strong>Important:</strong></span> AI pipeline anedi
 framework <strong>paina</strong> kurchuni undi, dhaani <strong>lopala</strong>
@@ -43,32 +43,31 @@ normal ga run avutayi. Idi deliberate design.</p>
 
 ### <span style="color:#364FC7;">A) Test Rayadam (Authoring)</span>
 
-| Feature | Command | Em chestundi |
-|---|---|---|
-| Scenario create | `/create-scenarios` | App domain chusi 6 lenses tho TC-### scenarios rasthundi (happy path, business rules, security, negative, edge cases, UI state) |
-| Layer decide | `/test-strategy` | Ee test E2E aa? API aa? Unit aa? — decide chestundi. "Anni E2E lo pettodhu" ani warn chestundi |
-| Test rayadam | `/generate-tests` | Page Object + spec + config entry rasi, **real browser lo run chesi**, pass ayye varaku debug chestundi |
-| Review | `/review-tests` | Best practices ki against ga check chestundi. Idi **rayadu**, only report chestundi |
-| **Anni okesari** | **`/ship-test <scenario>`** | Paina anni steps ni auto ga chestundi — one prompt, one passing test |
+| Feature          | Command                     | Em chestundi                                                                                                                    |
+| ---------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Scenario create  | `/create-scenarios`         | App domain chusi 6 lenses tho TC-### scenarios rasthundi (happy path, business rules, security, negative, edge cases, UI state) |
+| Layer decide     | `/test-strategy`            | Ee test E2E aa? API aa? Unit aa? — decide chestundi. "Anni E2E lo pettodhu" ani warn chestundi                                  |
+| Test rayadam     | `/generate-tests`           | Page Object + spec + config entry rasi, **real browser lo run chesi**, pass ayye varaku debug chestundi                         |
+| Review           | `/review-tests`             | Best practices ki against ga check chestundi. Idi **rayadu**, only report chestundi                                             |
+| **Anni okesari** | **`/ship-test <scenario>`** | Paina anni steps ni auto ga chestundi — one prompt, one passing test                                                            |
 
 ### <span style="color:#364FC7;">B) Test Maintain Cheyyadam (Maintenance) — Idi Real Power</span>
 
-| Feature | Command | Em chestundi |
-|---|---|---|
-| Self-healing | `/heal-test` | App lo button id change aithe, AI aa element ni **semantic ga** vetiki, locator ni fix chestundi |
-| Failure triage | `/triage-failure` | Test red aithe — selector rot aa? test bug aa? **app bug aa**? flake aa? — evidence tho classify chestundi |
-| Flaky detection | `/detect-flaky` | Run history chusi "ee test nijam ga flaky aa, leda roju fail avutunda?" ani cheptundi |
-| **Anni okesari** | **`/autopilot`** | Suite run → fail ayina vaatini triage → fix cheyyagalige vaatini fix → malli run chesi prove → report |
+| Feature          | Command          | Em chestundi                                                                                            |
+| ---------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| Self-healing     | `/heal-test`     | App lo button id change aithe, AI aa element ni **semantic ga** vetiki, locator ni fix chestundi        |
+| Flaky detection  | `/detect-flaky`  | Run history chusi "ee test nijam ga flaky aa, leda roju fail avutunda?" ani cheptundi                   |
+| **Anni okesari** | **`/autopilot`** | Suite run → fail ayina vaatini classify → fix cheyyagalige vaatini fix → malli run chesi prove → report |
 
 ### <span style="color:#364FC7;">C) Coverage Penchadam</span>
 
-| Feature | Command | Em chestundi |
-|---|---|---|
-| App explore | `/explore-app` | Live app ni crawl chesi, flows/rules/data models ni **AI ye** document chestundi |
-| API tests | `/generate-api-tests` | Browser avasaram leni rules ni API layer lo test chestundi (fast + stable) |
-| Test data | `/generate-testdata` | Boundary values + XSS/SQL injection lanti adversarial data generate chestundi |
-| Accessibility | `/audit-a11y` | Blind/keyboard users ki app work avutunda ani check chestundi |
-| Report | `/run-report` | Manager ki ardham ayye plain English report — "DFW facility hours kanipinchatledu" laaga, `facilities.spec.ts:88 failed` laaga kaadu |
+| Feature       | Command               | Em chestundi                                                                                                                         |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| App explore   | `/explore-app`        | Live app ni crawl chesi, flows/rules/data models ni **AI ye** document chestundi                                                     |
+| API tests     | `/generate-api-tests` | Browser avasaram leni rules ni API layer lo test chestundi (fast + stable)                                                           |
+| Test data     | `/generate-testdata`  | Boundary values + XSS/SQL injection lanti adversarial data generate chestundi                                                        |
+| Accessibility | `/audit-a11y`         | Blind/keyboard users ki app work avutunda ani check chestundi                                                                        |
+| Report        | `/run-report`         | Manager ki ardham ayye plain English report — "DFW facility hours kanipinchatledu" laaga, `facilities.spec.ts:88 failed` laaga kaadu |
 
 ---
 
@@ -130,25 +129,25 @@ correct aa?" ane final call manadi.
 
 ### <span style="color:#364FC7;">Ee project lo AI ekkada full ga chestundi:</span>
 
-| Stage | AI % | Explanation |
-|---|---|---|
-| Scenario rayadam | 100% | Domain chusi anni cases AI ye rasthundi |
-| Layer decide cheyyadam | 100% | Rules clear unnayi, AI apply chestundi |
-| Test code rayadam | 100% | Real browser lo verify chesi rasthundi |
-| Test run cheyyadam | 100% | CI lo automatic |
-| Fail ayite diagnose cheyyadam | 100% | Trace + screenshot + history chusi |
-| Locator fix cheyyadam | 95% | Confidence ekkuva unte auto-apply, thakkuva unte propose only |
-| Report rayadam | 100% | Business language lo |
+| Stage                         | AI % | Explanation                                                   |
+| ----------------------------- | ---- | ------------------------------------------------------------- |
+| Scenario rayadam              | 100% | Domain chusi anni cases AI ye rasthundi                       |
+| Layer decide cheyyadam        | 100% | Rules clear unnayi, AI apply chestundi                        |
+| Test code rayadam             | 100% | Real browser lo verify chesi rasthundi                        |
+| Test run cheyyadam            | 100% | CI lo automatic                                               |
+| Fail ayite diagnose cheyyadam | 100% | Trace + screenshot + history chusi                            |
+| Locator fix cheyyadam         | 95%  | Confidence ekkuva unte auto-apply, thakkuva unte propose only |
+| Report rayadam                | 100% | Business language lo                                          |
 
 ### <span style="color:#364FC7;">Human ekkada avasaram (deliberate ga):</span>
 
-| Gate | Enduku ee gate undi |
-|---|---|
-| `app-domain` file confirm cheyyadam | Idi **oracle** — "app ela pani cheyyali" ane truth. Ee file lo oka thappu line unte, dhaani base meeda rasina **anni** tests thappu avutayi. So `/explore-app` draft istundi, nuvvu confirm chestav. |
-| App bug vs test bug decide cheyyadam | AI ki app contradict aithe, adi test ni marchadu — `docs/reports/app-bugs.md` lo rasi **red ga vadilestundi**. Enduku? App bug ni test lo "fix" cheyyadam ante, bug ni dhaachadam. |
-| Low-confidence locator fix | Thappu element ki point chese locator kanna, red test better. |
-| Quarantine cheyyadam | Oka roju fail aithe "flaky" ani anakudadhu. History kavali — adi `.test-history/` lo undi. |
-| Commit / merge | AI code rasthundi, kani commit **nuvve** chestav. |
+| Gate                                 | Enduku ee gate undi                                                                                                                                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app-domain` file confirm cheyyadam  | Idi **oracle** — "app ela pani cheyyali" ane truth. Ee file lo oka thappu line unte, dhaani base meeda rasina **anni** tests thappu avutayi. So `/explore-app` draft istundi, nuvvu confirm chestav. |
+| App bug vs test bug decide cheyyadam | AI ki app contradict aithe, adi test ni marchadu — `docs/reports/app-bugs.md` lo rasi **red ga vadilestundi**. Enduku? App bug ni test lo "fix" cheyyadam ante, bug ni dhaachadam.                   |
+| Low-confidence locator fix           | Thappu element ki point chese locator kanna, red test better.                                                                                                                                        |
+| Quarantine cheyyadam                 | Oka roju fail aithe "flaky" ani anakudadhu. History kavali — adi `.test-history/` lo undi.                                                                                                           |
+| Commit / merge                       | AI code rasthundi, kani commit **nuvve** chestav.                                                                                                                                                    |
 
 <p><span style="color:#C92A2A;"><strong>Gurthu pettuko:</strong></span> Ee gates
 <strong>limitation kaadu — feature</strong>. Ivi lekapote, AI konni vaaralaki
@@ -187,12 +186,12 @@ npm run history:analyze
 
 Idi run cheste ee table vastundi:
 
-| verdict | meaning | em cheyyali |
-|---|---|---|
-| `stable` | Prathi sari pass | Emi cheyyakkarledu |
-| `flaky` | Kondaka sari pass, kondaka sari fail | `/detect-flaky` — cause kanukko |
-| `consistently-failing` | Eppudu pass avvatledu | Idi **flaky kaadu** — idi broken. `/triage-failure` |
-| `insufficient-data` | Inka thakkuva runs | Data kosam wait cheyyi |
+| verdict                | meaning                              | em cheyyali                                                             |
+| ---------------------- | ------------------------------------ | ----------------------------------------------------------------------- |
+| `stable`               | Prathi sari pass                     | Emi cheyyakkarledu                                                      |
+| `flaky`                | Kondaka sari pass, kondaka sari fail | `/detect-flaky` — cause kanukko                                         |
+| `consistently-failing` | Eppudu pass avvatledu                | Idi **flaky kaadu** — idi broken. Playwright HTML report lo trace chudu |
+| `insufficient-data`    | Inka thakkuva runs                   | Data kosam wait cheyyi                                                  |
 
 <p><span style="color:#C92A2A;"><strong>Key point:</strong></span> Roju fail ayye
 test <strong>flaky kaadu</strong> — adi <strong>broken</strong>. Ee rendintini
@@ -209,7 +208,6 @@ kalipite, real regression ni "just flaky" ani vadilestaru. Adi chala danger.</p>
 /autopilot                ← Suite check chesi fix cheyyi
 /explore-app              ← Kotha app — domain draft cheyyi
 /heal-test <spec>         ← Locator break ayindi
-/triage-failure           ← Enduku fail ayindo teliyadu
 /detect-flaky             ← "Random ga fail avutundi" ante
 /run-report               ← Manager ki report kavali
 /audit-a11y               ← Accessibility check
@@ -268,11 +266,11 @@ pani, so rendu different peru.</p>
 
 ## <span style="color:#C92A2A;"><strong>10) Inka Em Migilindi? (Honest List)</strong></span>
 
-| Enti | Enduku inka cheyyaledu |
-|---|---|
-| **Visual regression** (screenshot compare) | Baseline images store cheyyali + AI tho compare cheyyali. Pixel diff matram pette false positives ekkuva vastayi, appudu evaru nammaru. Idi periya pani. |
-| **Unit tests** | Idi **deliberate ga vaddu** ani decide chesam. Unit tests app repo lo, code pakkana undali — ikkada kaadu. |
-| **Parallel execution** | Ippudu `fullyParallel: false` — endukante anni Page Objects oke `globalVariables.page` share chestunnayi. Fix cheyyalante **anni** Page Objects marchali. Adi periya breaking change, so adi manishi decision. |
+| Enti                                       | Enduku inka cheyyaledu                                                                                                                                                                                         |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Visual regression** (screenshot compare) | Baseline images store cheyyali + AI tho compare cheyyali. Pixel diff matram pette false positives ekkuva vastayi, appudu evaru nammaru. Idi periya pani.                                                       |
+| **Unit tests**                             | Idi **deliberate ga vaddu** ani decide chesam. Unit tests app repo lo, code pakkana undali — ikkada kaadu.                                                                                                     |
+| **Parallel execution**                     | Ippudu `fullyParallel: false` — endukante anni Page Objects oke `globalVariables.page` share chestunnayi. Fix cheyyalante **anni** Page Objects marchali. Adi periya breaking change, so adi manishi decision. |
 
 ---
 
@@ -288,4 +286,4 @@ pani, so rendu different peru.</p>
 
 ---
 
-*Related: [architecture.md](../architecture.md) (full design), [quickstart.md](../quickstart.md) (step-by-step), [roadmap.md](../roadmap.md) (em migilindi)*
+_Related: [architecture.md](../architecture.md) (full design), [quickstart.md](../quickstart.md) (step-by-step), [roadmap.md](../roadmap.md) (em migilindi)_

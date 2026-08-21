@@ -146,7 +146,7 @@
     <div class="stat"><div class="from">MCP for Claude Code</div><div class="to">unregistered <span class="arrow">→</span> wired (<code>.mcp.json</code>)</div></div>
     <div class="stat"><div class="from">Domain knowledge</div><div class="to">bound to one app <span class="arrow">→</span> fill-in template</div></div>
     <div class="stat"><div class="from">Broken locator</div><div class="to">guess &amp; retry <span class="arrow">→</span> semantic re-locate</div></div>
-    <div class="stat"><div class="from">A red run</div><div class="to">sits there <span class="arrow">→</span> triaged &amp; commented automatically</div></div>
+    <div class="stat"><div class="from">A red run</div><div class="to">sits there <span class="arrow">→</span> diagnosable from the uploaded trace</div></div>
     <div class="stat"><div class="from">AI vendor</div><div class="to">required <span class="arrow">→</span> optional — Claude Code or Copilot, or neither in CI</div></div>
   </div>
 </div>
@@ -161,7 +161,7 @@
   <a href="#s7">07 · MCP wiring</a>
   <a href="#s8">08 · One-shot vs manual</a>
   <a href="#s9">09 · Bootstrapping</a>
-  <a href="#s10">10 · CI &amp; triage</a>
+  <a href="#s10">10 · CI &amp; CD</a>
   <a href="#s11">11 · Driving from Copilot</a>
 </nav>
 
@@ -187,7 +187,7 @@
     <p class="dek">Steps 0–1 run inline, in this thread. Steps 2–3 are separate subagent calls — the boundary that keeps this cheap.</p>
 
     <figure class="fig">
-      <svg viewBox="0 0 900 290" role="img" aria-label="Pipeline diagram: a prompt enters the orchestrator, which triages inline, then spawns a build subagent and a review subagent inside an isolated-context boundary, with a one-time fix loop back to build on a critical finding, before returning a short summary as the report.">
+      <svg viewBox="0 0 900 290" role="img" aria-label="Pipeline diagram: a prompt enters the orchestrator, which classifies inline, then spawns a build subagent and a review subagent inside an isolated-context boundary, with a one-time fix loop back to build on a critical finding, before returning a short summary as the report.">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
@@ -221,7 +221,7 @@
         <!-- orchestrator box -->
         <rect x="182" y="80" width="186" height="80" rx="5" fill="var(--ground-raised)" stroke="#6f93b8" stroke-width="1.3" />
         <text x="275" y="112" font-size="12" fill="#e3f3ff" text-anchor="middle">Orchestrator</text>
-        <text x="275" y="130" font-size="10.5" fill="#9cbedd" text-anchor="middle">step 0–1 triage, inline</text>
+        <text x="275" y="130" font-size="10.5" fill="#9cbedd" text-anchor="middle">step 0–1 classify, inline</text>
         <text x="275" y="145" font-size="10.5" fill="#9cbedd" text-anchor="middle">no subagent yet</text>
 
         <!-- isolated boundary -->
@@ -248,7 +248,7 @@
 
     <ol>
       <li><strong>Step 0 — Resolve input.</strong> Scenario text, a TC-ID, or blank (pull next unimplemented TC). Not browser-observable? Stop and redirect to Unit/API.</li>
-      <li><strong>Step 1 — Triage, inline.</strong> Formalize into a TC block, classify the layer in one line, grep (not read) for reuse.</li>
+      <li><strong>Step 1 — Classify, inline.</strong> Formalize into a TC block, classify the layer in one line, grep (not read) for reuse.</li>
       <li><strong>Step 2 — Build, delegated.</strong> Write the Page Object + spec + config entry, verify selectors against the real page via Playwright MCP, run it, debug up to 3 times.</li>
       <li><strong>Step 3 — Review, delegated.</strong> Best-practices checklist against the new file(s) only.</li>
       <li><strong>Step 4 — Fix, once.</strong> Only if Step 3 found a <code>[CRITICAL]</code> issue.</li>
@@ -360,7 +360,7 @@
       <table>
         <thead><tr><th>Step</th><th>Work</th><th>Model</th></tr></thead>
         <tbody>
-          <tr><td>1 · Triage</td><td>Template-fill a TC block, one-line layer call, grep for reuse</td><td>inline — no separate call</td></tr>
+          <tr><td>1 · Classify</td><td>Template-fill a TC block, one-line layer call, grep for reuse</td><td>inline — no separate call</td></tr>
           <tr><td>2 · Build</td><td>Selector verification, codegen, real-browser debugging</td><td><strong>default</strong> — never downgrade</td></tr>
           <tr><td>3 · Review</td><td>Checklist match, scoped to the new file</td><td>default; <code>--fast</code> opts into a cheaper model</td></tr>
           <tr><td>4 · Fix</td><td>Same as Build</td><td>default</td></tr>
@@ -375,7 +375,7 @@
 
     <div class="lever-grid">
       <div class="lever"><b>Subagent-per-stage isolation</b><span>Steps 2–3 — see Sheet 03</span></div>
-      <div class="lever"><b>Inline fast-path triage</b><span>Skip a full scenario/strategy skill run for one scenario</span></div>
+      <div class="lever"><b>Inline fast-path classification</b><span>Skip a full scenario/strategy skill run for one scenario</span></div>
       <div class="lever"><b>Grep, never full-folder read</b><span>Reuse-check across specs &amp; page objects</span></div>
       <div class="lever"><b>One example file to mirror</b><span>Not "read every existing spec"</span></div>
       <div class="lever"><b>Structural determinism</b><span>Copy the known-good skeleton, vary only specifics</span></div>
@@ -434,24 +434,27 @@
   </section>
 
   <section class="sheet" id="s10">
-    <div class="sheet-head"><h2>CI &amp; failure triage</h2><span class="stamp">SHEET 10/11</span></div>
-    <p class="dek">Everything through Sheet 09 runs when a human types a command. This is what runs on its own — three layers, none a hard dependency on the ones above.</p>
+    <div class="sheet-head"><h2>CI &amp; CD</h2><span class="stamp">SHEET 10/11</span></div>
+    <p class="dek">Everything through Sheet 09 runs when a human types a command. This is what runs on its own — CI on every push, plus a CD gate an app's release pipeline can call.</p>
 
-    <pre class="diagram">pull_request  ─┬─▶ test (windows-latest, smoke)     ─┬─▶ review           (changed specs → PR comment, AI, optional)
-               │                                      │
-schedule/manual┴─▶ test (windows-latest, regression) ─┼─▶ triage-baseline  (evidence → PR comment / tracked issue, no AI)
-                                                       └─▶ triage           (enriches triage-baseline's post, AI, optional)</pre>
+    <pre class="diagram">push (any branch)  ─▶ FULL   ─┐
+pull_request       ─▶ smoke  ─┼─▶ test (windows-latest) ─┬─▶ HTML report artifacts
+schedule 03:00 UTC ─▶ smoke  ─┤                          └─▶ publish-report (Pages, opt-in)
+workflow_dispatch  ─▶ either ─┘
+                              lint-skills · quality (lint + typecheck)
+                              review (changed specs → PR comment, AI, optional)</pre>
 
     <ul>
       <li><strong>test</strong> is deterministic — <code>npm run pw:test[:smoke]</code>, nothing AI about it, runs regardless of secrets. Runs on <code>windows-latest</code> on purpose: the logging path (<code>C:\LogFolder\...</code>) and Allure teardown are Windows-specific by design (Sheet 07) — this matches local dev rather than working around it.</li>
-      <li><strong>triage-baseline</strong> runs whenever <code>test</code> fails, needs no AI vendor, and posts the raw evidence — failing test names, an <code>out.txt</code> excerpt, links to the uploaded artifacts — as a PR comment, or (for a nightly run with no PR to comment on) a tracked GitHub issue reused across nights. This is the value floor: CI produces a real signal with <strong>no AI vendor configured anywhere</strong>.</li>
+      <li><strong>Push runs the FULL suite</strong> deliberately — the code you just pushed is exercised together with every test already in the repo, so a new spec cannot pass in isolation while quietly breaking an existing one. PRs get smoke for speed; the daily smoke catches app-side drift on days nobody pushed.</li>
+      <li><strong>The failure signal is the artifact, not a bot.</strong> Every run uploads the Playwright HTML report, which embeds the trace, screenshot and error for each failing test. A red run is diagnosable from the artifact alone, with <strong>no AI vendor configured anywhere</strong> and nothing commenting on your behalf.</li>
       <li><strong>review</strong> (optional, AI) runs <code>review-tests</code> against exactly the spec/PO files changed in the PR — the same file-scoping discipline as Sheet 08 — and posts the result as a PR comment.</li>
-      <li><strong>triage</strong> (optional, AI) runs only when <code>test</code> fails, downloads that run's Allure results and raw traces, and hands them to <code>triage-failure</code>, which classifies the failure — selector rot → <code>heal-test</code>, test bug → <code>generate-tests</code>, app bug → filed and left untouched, flake → flagged, never silently dismissed — then appends its verdict to whatever <strong>triage-baseline</strong> already posted, rather than starting a second conversation.</li>
+      <li><strong>The CD half</strong> — <code>e2e-gate.yml</code> lets an application's release pipeline call this suite as a promotion gate between deploying staging and promoting production, with per-environment secrets from GitHub Environments. See <code>docs/cicd.md</code>.</li>
     </ul>
 
     <div class="panel warn">
       <span class="label">Never a silent gate</span>
-      Both AI jobs need <code>ANTHROPIC_API_KEY</code> as a repo secret and are gated on it being present — missing it skips them cleanly rather than failing the build, and <code>triage-baseline</code> has already posted something useful either way. Both also run the Claude Code invocation itself with <code>continue-on-error: true</code>: an AI job that fails to run is a missed comment, never a red PR check by itself. The same "CI auto-comments, it doesn't auto-merge" guardrail from <code>docs/roadmap.md</code> applies at the workflow level, not just in the skill instructions.
+      <code>review</code> needs <code>ANTHROPIC_API_KEY</code> as a repo secret — missing it skips the job cleanly rather than failing the build, and the HTML report artifact is there either way. Note that <code>secrets</code> is <em>not</em> a context GitHub allows in a job-level <code>if:</code> — referencing it there makes the entire workflow file fail to parse — so a small <code>config</code> job resolves it where <code>env</code> is legal and <code>review</code> gates on that output. <code>review</code> also runs the Claude Code invocation with <code>continue-on-error: true</code>: an AI job that fails to run is a missed comment, never a red PR check by itself. The same "CI auto-comments, it doesn't auto-merge" guardrail from <code>docs/roadmap.md</code> applies at the workflow level, not just in the skill instructions.
     </div>
   </section>
 
@@ -474,7 +477,7 @@ schedule/manual┴─▶ test (windows-latest, regression) ─┼─▶ triage-b
       <code>ship-test</code>'s Build and Review steps run as isolated Claude Code subagents for the context-isolation reasons in Sheet 03 — that mechanism has no direct Copilot equivalent as of this writing. Driven from Copilot, the same five steps run sequentially in one chat instead; the process and file outputs are identical, the token-isolation benefit just doesn't apply to that path yet.
     </div>
 
-    <p>GitHub's Copilot coding agent (assign-to-<code>@copilot</code> on an issue) is a real option for picking up the issue <code>triage-baseline</code> files on a nightly failure — but it's issue-driven and asynchronous, not a scriptable "run this step in this job" call the way <code>claude -p</code> is, so it's a manual assignment, not automated in the workflow.</p>
+    <p>GitHub's Copilot coding agent (assign-to-<code>@copilot</code> on an issue) is a real option for picking up a failure you have filed by hand — but it's issue-driven and asynchronous, not a scriptable "run this step in this job" call the way <code>claude -p</code> is, so it's a manual assignment, not automated in the workflow.</p>
   </section>
 
 </div>

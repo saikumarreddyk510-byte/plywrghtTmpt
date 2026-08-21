@@ -31,14 +31,14 @@ everything downstream — a human confirms it.
 
 ## `reports/` — generated output (written by skills, read by people)
 
-| File               | Written by                                      | Audience                                              |
-| ------------------ | ----------------------------------------------- | ----------------------------------------------------- |
-| `run-report.md`    | `/run-report`, `/autopilot`                     | Anyone who needs to know if the release is safe       |
-| `review-report.md` | `/review-tests`                                 | Whoever is about to merge the spec                    |
-| `healing-log.md`   | `/heal-test`                                    | Whoever needs to audit what a locator fix changed     |
-| `flaky-log.md`     | `/detect-flaky`                                 | Whoever owns the quarantine and its re-check date     |
-| `app-bugs.md`      | `/autopilot`, `/triage-failure`, the generators | The app team                                          |
-| `a11y/*.json`      | the `a11y` test project                         | `/audit-a11y`, which turns them into `a11y-report.md` |
+| File               | Written by                   | Audience                                              |
+| ------------------ | ---------------------------- | ----------------------------------------------------- |
+| `run-report.md`    | `/run-report`, `/autopilot`  | Anyone who needs to know if the release is safe       |
+| `review-report.md` | `/review-tests`              | Whoever is about to merge the spec                    |
+| `healing-log.md`   | `/heal-test`                 | Whoever needs to audit what a locator fix changed     |
+| `flaky-log.md`     | `/detect-flaky`              | Whoever owns the quarantine and its re-check date     |
+| `app-bugs.md`      | `/autopilot`, the generators | The app team                                          |
+| `a11y/*.json`      | the `a11y` test project      | `/audit-a11y`, which turns them into `a11y-report.md` |
 
 Nothing in here is a source of truth for the pipeline — deleting a report loses
 history, not correctness.

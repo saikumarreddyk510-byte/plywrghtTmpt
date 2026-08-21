@@ -36,11 +36,13 @@ ones to subagents so this conversation stays affordable across a long run.
 `$ARGUMENTS` — `smoke`, `regression`, or a spec path. Blank means `smoke`.
 
 ## Step 0 — Scope (inline)
+
 `$ARGUMENTS`: `smoke` (default) → `npm run pw:test:smoke`; `regression` →
 `npm run pw:test`; a spec path → that spec only. Say which you are running and
 why before you start.
 
 ## Step 1 — Run (inline, Bash)
+
 Run it. Capture the full output. Record: total, passed, failed, flaky,
 duration. RunHistoryReporter appends this run to `.test-history/runs.jsonl`
 automatically — you do not have to record anything yourself.
@@ -49,18 +51,28 @@ automatically — you do not have to record anything yourself.
 `npm run history:analyze`. A green run still deserves a report; that is how
 anyone knows the loop actually ran.
 
-## Step 2 — Triage each failure (delegate)
+## Step 2 — Classify each failure (delegate)
+
 Spawn **one** subagent (`general-purpose`, foreground) for the whole failure
 set — not one per failure. Give it: the failing test names, the run output
-excerpt, and the evidence paths (`test-results/`, the `C:\LogFolder\<run>\`
-folder). Tell it to follow `.claude/skills/triage-failure/SKILL.md` and return
-a table only:
+excerpt, the evidence paths (`test-results/`, the `C:\LogFolder\<run>\`
+folder), and the table below. Ask it to return a table only:
 
 | Test | Class (selector rot / test bug / app bug / flake candidate) | Evidence | Confidence |
 
+Classify on the signal, not the symptom:
+
+| Signal                                                                                                                 | Class                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `TimeoutError` waiting for an element, "element not found", strict-mode violation                                      | **Selector rot**                                                           |
+| Element found, but the assertion disagrees, **and** `app-domain` confirms the old expected behaviour is still correct  | **Test bug**                                                               |
+| Element found, assertion disagrees, **and** the app now contradicts `app-domain`'s documented rule for that flow       | **App bug** — do not touch the test                                        |
+| Passed on a prior run, fails now, no relevant change, failure looks timing-sensitive (race, animation, network jitter) | **Flake candidate** — never force green with sleeps or weakened assertions |
+| Page never loaded / wrong URL / setup failed before the flow started                                                   | **Environment** — check `BASE_URL` and credentials before anything else    |
+
 Cross-check its verdicts against `npm run history:json -- --runs 10` yourself,
 inline. A test the history shows failing every run is **not** a flake, whatever
-the triage said — history beats a single-run impression.
+a single run suggests — history beats a single-run impression.
 
 ## Step 3 — Fix what is safely fixable (delegate, in this order)
 
@@ -80,16 +92,19 @@ If nothing falls into the two fixable buckets, skip Step 4 — do not re-run to
 watch the same failures again.
 
 ## Step 4 — Prove it (inline, Bash)
+
 Re-run **only the affected specs**. Report the real result, whatever it is.
 This step exists because "fix applied" and "fix works" are different claims,
 and only the second one is worth anything.
 
 ## Step 5 — Report (delegate or inline)
+
 Produce the digest per `.claude/skills/run-report/SKILL.md` → `docs/reports/run-report.md`,
 extended with an autopilot section:
 
 ```markdown
 ## Autopilot actions
+
 - Healed: <test> — <old locator> → <new locator> (confidence, docs/reports/healing-log.md)
 - Fixed: <test> — <what was wrong in the test>
 - Filed: <n> app bug(s) — docs/reports/app-bugs.md
@@ -99,7 +114,7 @@ extended with an autopilot section:
 
 Then tell the user, in under 12 lines: green/red before and after, what you
 changed, what you filed, what still needs them. Name the next command if there
-is an obvious one (`/detect-flaky`, `/heal-test <spec>`, `/triage-failure`).
+is an obvious one (`/detect-flaky`, `/heal-test <spec>`).
 
 ## Done means
 
@@ -111,7 +126,8 @@ is an obvious one (`/detect-flaky`, `/heal-test <spec>`, `/triage-failure`).
 - `docs/reports/run-report.md` is written, with the autopilot section.
 - Nothing is green because it was skipped, quarantined, or weakened.
 
-## When *not* to use this skill
+## When _not_ to use this skill
+
 - You want a new test written → `/ship-test`.
 - You already know which spec broke and how → `/heal-test` or `/generate-tests`
   directly; autopilot's overhead only pays off across a whole suite.

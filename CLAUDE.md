@@ -102,7 +102,7 @@ files — see `.github/copilot-instructions.md` and `docs/architecture.md` §12.
 - **One-shot (authoring)**: `/ship-test <scenario>` (or just paste a scenario) —
   orchestrates everything below through isolated subagents, end to end.
 - **One-shot (maintenance)**: `/autopilot [smoke|regression|spec]` — runs the
-  suite, triages what went red, heals selector rot, fixes test bugs, re-runs to
+  suite, classifies what went red, heals selector rot, fixes test bugs, re-runs to
   prove it, and writes `docs/reports/run-report.md`. Hard limits keep it honest: one
   fix-and-re-run cycle, never reaches green by weakening a test, files app bugs
   to `docs/reports/app-bugs.md` instead of absorbing them, never commits. See
@@ -131,16 +131,12 @@ files — see `.github/copilot-instructions.md` and `docs/architecture.md` §12.
   `heal-test` skill and `playwright-best-practices` §9. `generate-tests`'
   debug loop calls it automatically for locator-class failures. Applied fixes
   are logged to `docs/reports/healing-log.md`; ambiguous ones are never auto-applied.
-- **Failure triage**: `/triage-failure [spec]` reads a red run's trace,
-  screenshots, and logs and classifies it — selector rot (→ `heal-test`), test
-  bug (→ `generate-tests`), app bug/regression (filed, test left untouched),
-  or environment flake (flagged, not silently "fixed"). Wired into CI (below).
 - **CI**: `.github/workflows/playwright.yml` — full suite on every push,
   smoke on every PR, smoke daily at 03:00 UTC. `.githooks/` run the same
-  format/lint/typecheck locally before a push leaves the machine. On failure,
-  `triage-baseline` posts the raw evidence with **no AI vendor required**;
-  `review`/`triage` are optional AI enrichment on top of that, gated on
-  `ANTHROPIC_API_KEY` as a repo secret (skipped cleanly if it's not set).
+  format/lint/typecheck locally before a push leaves the machine. Every run
+  uploads its HTML reports as artifacts, so a red run is diagnosable from the
+  trace alone. `review` is optional AI enrichment, gated on `ANTHROPIC_API_KEY`
+  as a repo secret (skipped cleanly if it's not set).
 - **CD**: `.github/workflows/e2e-gate.yml` — the CD-facing half. An app's
   release pipeline calls it (`workflow_call`, or `repository_dispatch` from a
   non-Actions deploy system) to use this suite as a **promotion gate**, with
