@@ -31,12 +31,20 @@ export default defineConfig({
   fullyParallel: false,
   reporter: [
     ["list"],
+    // Self-contained HTML report at playwright-report/ — no Java, no external
+    // tooling, traces embedded. This is the artifact CI uploads and the one to
+    // open first; Allure below stays the richer project-standard report.
+    // open: "never" so a local failing run never hijacks a browser window.
+    ["html", { outputFolder: "playwright-report", open: "never" }],
     ["allure-playwright", { resultsDir: allureResultsDir }],
     ["./playwright/support/reporting/logFileReporter.ts"],
     ["./playwright/support/reporting/runHistoryReporter.ts"],
   ],
   use: {
-    baseURL: process.env.BASE_URL ?? "https://your-app.example.com",
+    // NOTE: `||`, not `??`. An unset GitHub Actions secret arrives as an empty
+    // string, which `??` would happily pass through as baseURL: "" — making
+    // every relative goto("/") fail with "Invalid URL" in CI.
+    baseURL: process.env.BASE_URL || "https://your-app.example.com",
     viewport: { width: 1920, height: 1080 },
     actionTimeout: 10_000,
     navigationTimeout: 120_000,

@@ -45,7 +45,9 @@ export class FacilitiesPage {
   async clickFacilities(): Promise<void> {
     await this.getFacilitiesDropdownLink().click();
     await this.page().waitForURL("**/facilityForm**", { timeout: 10_000 });
-    comFunc.reportMessagePass("FacilitiesPage.clickFacilities() - Navigated to Facilities search page");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.clickFacilities() - Navigated to Facilities search page",
+    );
   }
 
   async search(code: string): Promise<void> {
@@ -58,17 +60,23 @@ export class FacilitiesPage {
   async verifyOnFacilityResultPage(airportCode: string): Promise<void> {
     await this.page().waitForURL(`**/${airportCode.toUpperCase()}**`, { timeout: 25_000 });
     await expect(this.page()).toHaveURL(new RegExp(airportCode.toUpperCase()), { timeout: 5_000 });
-    comFunc.reportMessagePass(`FacilitiesPage.verifyOnFacilityResultPage() - URL contains "${airportCode.toUpperCase()}" ✅`);
+    comFunc.reportMessagePass(
+      `FacilitiesPage.verifyOnFacilityResultPage() - URL contains "${airportCode.toUpperCase()}" ✅`,
+    );
   }
 
   // ─── Multiple Facilities ───────────────────────────────────────────────────
   getMultipleFacilitiesMsg() {
-    return this.page().locator("p", { hasText: "There are multiple facilities at this airport." }).first();
+    return this.page()
+      .locator("p", { hasText: "There are multiple facilities at this airport." })
+      .first();
   }
 
   async verifyMultipleFacilitiesMessage(): Promise<void> {
     await expect(this.getMultipleFacilitiesMsg()).toBeVisible({ timeout: 10_000 });
-    comFunc.reportMessagePass("FacilitiesPage.verifyMultipleFacilitiesMessage() - Multiple facilities msg confirmed ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifyMultipleFacilitiesMessage() - Multiple facilities msg confirmed ✅",
+    );
   }
 
   // ─── Cargo Terminal ────────────────────────────────────────────────────────
@@ -170,7 +178,9 @@ export class FacilitiesPage {
   async verifyCustomsPhoneIsCallable(): Promise<void> {
     const href = await this.getCustomsPhone().getAttribute("href");
     expect(href).toBe("tel:972-870-7460");
-    comFunc.reportMessagePass("FacilitiesPage.verifyCustomsPhoneIsCallable() - tel: href confirmed ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifyCustomsPhoneIsCallable() - tel: href confirmed ✅",
+    );
   }
 
   // ─── Airport Information ────────────────────────────────────────────────────
@@ -204,7 +214,9 @@ export class FacilitiesPage {
     await expect(this.getDropOffTimesHeading()).toBeVisible({ timeout: 10_000 });
     await expect(this.getUSDomesticBtn()).toBeVisible();
     await expect(this.getIntlOutboundBtn()).toBeVisible();
-    comFunc.reportMessagePass("FacilitiesPage.verifyDropOffTimesSection() - Drop-off times section confirmed ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifyDropOffTimesSection() - Drop-off times section confirmed ✅",
+    );
   }
 
   // ─── Directions Links ───────────────────────────────────────────────────────
@@ -212,23 +224,27 @@ export class FacilitiesPage {
     const href = await this.getCargoTerminalDirectionsLink().getAttribute("href");
     expect(href).toContain("32.91378");
     expect(href).toContain("-97.03849");
-    comFunc.reportMessagePass("FacilitiesPage.verifyCargoTerminalDirectionsLink() - GPS coordinates confirmed ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifyCargoTerminalDirectionsLink() - GPS coordinates confirmed ✅",
+    );
   }
 
   // ─── Search Box Placeholder ─────────────────────────────────────────────────
   async verifySearchBoxPlaceholder(): Promise<void> {
     await this.getSearchBox().waitFor({ state: "visible", timeout: 15_000 });
     await expect(this.getSearchBox()).toBeVisible();
-    comFunc.reportMessagePass("FacilitiesPage.verifySearchBoxPlaceholder() - Search box 'Location, City or Airport' visible ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifySearchBoxPlaceholder() - Search box 'Location, City or Airport' visible ✅",
+    );
   }
 
   // ─── Section Order ──────────────────────────────────────────────────────────
   async verifySectionOrder(): Promise<void> {
     const headings = await this.page().locator("h2").allTextContents();
-    const cargoIdx = headings.findIndex(h => h.includes("Cargo Terminal"));
-    const ppsIdx = headings.findIndex(h => h.includes("Priority Parcel Service"));
-    const customsIdx = headings.findIndex(h => h.includes("Customs Information"));
-    const airportIdx = headings.findIndex(h => h.includes("Airport Information"));
+    const cargoIdx = headings.findIndex((h) => h.includes("Cargo Terminal"));
+    const ppsIdx = headings.findIndex((h) => h.includes("Priority Parcel Service"));
+    const customsIdx = headings.findIndex((h) => h.includes("Customs Information"));
+    const airportIdx = headings.findIndex((h) => h.includes("Airport Information"));
     expect(cargoIdx).toBeLessThan(ppsIdx);
     expect(ppsIdx).toBeLessThan(customsIdx);
     expect(customsIdx).toBeLessThan(airportIdx);
@@ -239,7 +255,9 @@ export class FacilitiesPage {
   async verifyAccessibleWithoutLogin(url: string): Promise<void> {
     await this.page().goto(url, { waitUntil: "domcontentloaded" });
     await expect(this.getCargoTerminalHeading()).toBeVisible({ timeout: 10_000 });
-    comFunc.reportMessagePass("FacilitiesPage.verifyAccessibleWithoutLogin() - Page accessible without login ✅");
+    comFunc.reportMessagePass(
+      "FacilitiesPage.verifyAccessibleWithoutLogin() - Page accessible without login ✅",
+    );
   }
 }
 

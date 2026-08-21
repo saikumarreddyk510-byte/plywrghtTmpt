@@ -14,6 +14,16 @@ import { comFunc } from "../support/commonFunctions/commonFunctions";
  * Run all:           npx playwright test
  */
 test.describe("Example test suite", () => {
+  // Without BASE_URL there is nothing to point at but the placeholder host,
+  // which does not resolve - the suite would go red for a configuration gap
+  // rather than a defect, and a suite that is red for that reason teaches
+  // people to ignore red. Same guard example.api.spec.ts and
+  // example.a11y.spec.ts already use.
+  test.skip(
+    !process.env.BASE_URL,
+    "Set BASE_URL in .env (or as a CI secret) to run the example suite",
+  );
+
   test.beforeEach(async ({ page }) => {
     setPage(page);
     page.on("pageerror", () => {});

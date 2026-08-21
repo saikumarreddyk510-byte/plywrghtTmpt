@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# pre-push — the gate. Verifies the whole repo is lint-clean and compiles
+# before anything leaves your machine, so CI never goes red on something a
+# five-second local check would have caught.
+#
+# This deliberately only CHECKS: pre-commit already did the rewriting.
+#
+# Bypass in an emergency with: git push --no-verify
+set -e
+
+echo "pre-push: eslint (includes prettier formatting rules)…"
+npm run lint
+
+echo "pre-push: tsc --noEmit…"
+npm run typecheck
+
+echo "pre-push: all checks passed — pushing."

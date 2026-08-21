@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-package-lock.json
+# package-lock.json is intentionally NOT ignored: `npm ci` in CI requires a
+# committed lockfile, and it is what makes CI installs reproducible.
 
 # Auth storageState files — never commit session tokens
 playwright/.auth/*.json
@@ -9,6 +10,7 @@ playwright/.auth/*.json
 allure-results/
 allure-results-*/
 allure-report/
+playwright-report/
 test-results/
 
 # Log output

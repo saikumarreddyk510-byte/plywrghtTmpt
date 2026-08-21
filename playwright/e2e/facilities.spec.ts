@@ -17,7 +17,7 @@ test.describe("AACargo Facilities - DFW Search & Validation", () => {
 
   // ─── SMOKE TESTS (P0) ──────────────────────────────────────────────────────
 
-  test("TC-001 - Navigate to Facilities via Ship menu", async ({ page }) => {
+  test("TC-001 - Navigate to Facilities via Ship menu", async () => {
     comFunc.reportMessageInfo("TC-001 - Step 1: Navigate to aacargo.com homepage");
     await facilitiesPage.navigateToHomepage();
 
@@ -60,7 +60,7 @@ test.describe("AACargo Facilities - DFW Search & Validation", () => {
     comFunc.reportMessageInfo("TC-003 - Verify Cargo Terminal address");
     await facilitiesPage.verifyCargoTerminalAddress(
       dfw.cargoTerminal.address,
-      dfw.cargoTerminal.city
+      dfw.cargoTerminal.city,
     );
   });
 
@@ -88,83 +88,89 @@ test.describe("AACargo Facilities - DFW Search & Validation", () => {
     await facilitiesPage.verifyPPSHours();
   });
 
-  // ─── REGRESSION TESTS (P1) ────────────────────────────────────────────────
+  // ─── REGRESSION (P1) + EXTENDED (P2) — skipped when SMOKE=true ────────────
+  // The P0 block above is what the daily smoke run and the PR gate execute;
+  // everything below runs on push and in the full regression. Matches the
+  // pattern already used in example.spec.ts.
+  if (!process.env.SMOKE) {
+    // ─── REGRESSION TESTS (P1) ────────────────────────────────────────────────
 
-  test("TC-007 - Customs information details are correct", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-007 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-007 - Customs information details are correct", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-007 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-007 - Verify Customs section");
-    await facilitiesPage.verifyCustomsInfo();
-  });
+      comFunc.reportMessageInfo("TC-007 - Verify Customs section");
+      await facilitiesPage.verifyCustomsInfo();
+    });
 
-  test("TC-008 - Airport Information section shows correct capabilities", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-008 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-008 - Airport Information section shows correct capabilities", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-008 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-008 - Verify Airport Information");
-    await facilitiesPage.verifyAirportInfo();
-  });
+      comFunc.reportMessageInfo("TC-008 - Verify Airport Information");
+      await facilitiesPage.verifyAirportInfo();
+    });
 
-  test("TC-102 - Customs phone number is a callable tel: link", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-102 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-102 - Customs phone number is a callable tel: link", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-102 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-102 - Verify phone is tel: link");
-    await facilitiesPage.verifyCustomsPhoneIsCallable();
-  });
+      comFunc.reportMessageInfo("TC-102 - Verify phone is tel: link");
+      await facilitiesPage.verifyCustomsPhoneIsCallable();
+    });
 
-  test("TC-103 - Minimum Drop-off Times section present", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-103 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-103 - Minimum Drop-off Times section present", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-103 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-103 - Verify Drop-off Times section");
-    await facilitiesPage.verifyDropOffTimesSection();
-  });
+      comFunc.reportMessageInfo("TC-103 - Verify Drop-off Times section");
+      await facilitiesPage.verifyDropOffTimesSection();
+    });
 
-  test("TC-201 - Facility page accessible without login", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-201 - Access DFW facility page directly (no login)");
-    await facilitiesPage.verifyAccessibleWithoutLogin(DFW_URL);
-  });
+    test("TC-201 - Facility page accessible without login", async () => {
+      comFunc.reportMessageInfo("TC-201 - Access DFW facility page directly (no login)");
+      await facilitiesPage.verifyAccessibleWithoutLogin(DFW_URL);
+    });
 
-  test("TC-501 - Search box placeholder text is correct", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-501 - Navigate to facilities search page");
-    await page.goto(FACILITIES_URL, { waitUntil: "domcontentloaded" });
+    test("TC-501 - Search box placeholder text is correct", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-501 - Navigate to facilities search page");
+      await page.goto(FACILITIES_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-501 - Verify placeholder text");
-    await facilitiesPage.verifySearchBoxPlaceholder();
-  });
+      comFunc.reportMessageInfo("TC-501 - Verify placeholder text");
+      await facilitiesPage.verifySearchBoxPlaceholder();
+    });
 
-  test("TC-503 - Facility sections displayed in correct order", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-503 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-503 - Facility sections displayed in correct order", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-503 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-503 - Verify section order");
-    await facilitiesPage.verifySectionOrder();
-  });
+      comFunc.reportMessageInfo("TC-503 - Verify section order");
+      await facilitiesPage.verifySectionOrder();
+    });
 
-  // ─── EXTENDED TESTS (P2) ──────────────────────────────────────────────────
+    // ─── EXTENDED TESTS (P2) ──────────────────────────────────────────────────
 
-  test("TC-009 - Get Directions link uses correct GPS coordinates", async ({ page }) => {
-    comFunc.reportMessageInfo("TC-009 - Navigate to DFW facility page");
-    await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
+    test("TC-009 - Get Directions link uses correct GPS coordinates", async ({ page }) => {
+      comFunc.reportMessageInfo("TC-009 - Navigate to DFW facility page");
+      await page.goto(DFW_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-009 - Verify Cargo Terminal directions link GPS coordinates");
-    await facilitiesPage.verifyCargoTerminalDirectionsLink();
-  });
+      comFunc.reportMessageInfo("TC-009 - Verify Cargo Terminal directions link GPS coordinates");
+      await facilitiesPage.verifyCargoTerminalDirectionsLink();
+    });
 
-  test("TC-401 - Search with uppercase DFW returns same results", async ({ page }) => {
-    test.setTimeout(60_000);
-    comFunc.reportMessageInfo("TC-401 - Navigate to facilities search page");
-    await page.goto(FACILITIES_URL, { waitUntil: "domcontentloaded" });
+    test("TC-401 - Search with uppercase DFW returns same results", async ({ page }) => {
+      test.setTimeout(60_000);
+      comFunc.reportMessageInfo("TC-401 - Navigate to facilities search page");
+      await page.goto(FACILITIES_URL, { waitUntil: "domcontentloaded" });
 
-    comFunc.reportMessageInfo("TC-401 - Search with uppercase DFW");
-    await facilitiesPage.search("DFW");
+      comFunc.reportMessageInfo("TC-401 - Search with uppercase DFW");
+      await facilitiesPage.search("DFW");
 
-    comFunc.reportMessageInfo("TC-401 - Verify URL contains DFW (case-insensitive)");
-    await facilitiesPage.verifyOnFacilityResultPage("DFW");
+      comFunc.reportMessageInfo("TC-401 - Verify URL contains DFW (case-insensitive)");
+      await facilitiesPage.verifyOnFacilityResultPage("DFW");
 
-    comFunc.reportMessageInfo("TC-401 - Verify multiple facilities message shown");
-    await facilitiesPage.verifyMultipleFacilitiesMessage();
-  });
+      comFunc.reportMessageInfo("TC-401 - Verify multiple facilities message shown");
+      await facilitiesPage.verifyMultipleFacilitiesMessage();
+    });
+  }
 });

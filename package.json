@@ -5,6 +5,7 @@
   "author": "",
   "license": "ISC",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || echo \"not a git repo - skipping hook install\"",
     "pw:test": "playwright test",
     "pw:test:smoke": "cross-env SMOKE=true playwright test",
     "pw:test:headed": "playwright test --headed",
@@ -38,10 +39,23 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.7.0",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "saucectl": "^0.202.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.45.0"
+  },
+  "lint-staged": {
+    "playwright/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "{playwright.config.ts,run-sauce.ts}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

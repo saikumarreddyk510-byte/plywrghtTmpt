@@ -45,7 +45,7 @@ export class ApiClient {
   ) {}
 
   static async create(options: ApiClientOptions = {}): Promise<ApiClient> {
-    const baseURL = options.baseURL ?? process.env.API_BASE_URL ?? BASE_URL;
+    const baseURL = options.baseURL || process.env.API_BASE_URL || BASE_URL;
     const ctx = await playwrightRequest.newContext({
       baseURL,
       extraHTTPHeaders: { Accept: "application/json", ...options.headers },

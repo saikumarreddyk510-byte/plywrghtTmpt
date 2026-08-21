@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# pre-commit — format and auto-fix the files being committed.
+#
+# Why formatting happens HERE and not in pre-push: by the time pre-push runs,
+# your commits already exist. Anything prettier rewrote at that point would sit
+# in the working tree as *unstaged* changes and would NOT be part of the push —
+# you'd push unformatted code and be left with a dirty tree. Formatting at
+# commit time is what actually gets the clean code into the commit you push.
+#
+# lint-staged does the part that is genuinely hard to get right by hand: when a
+# file is only PARTIALLY staged (git add -p), it stashes the unstaged remainder,
+# formats and re-stages just the staged content, then restores the remainder.
+# A hand-rolled `git add <file>` after formatting would sweep those unstaged
+# edits into the commit as well.
+#
+# Bypass in an emergency with: git commit --no-verify
+set -e
+
+npx lint-staged

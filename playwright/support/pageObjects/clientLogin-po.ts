@@ -39,12 +39,16 @@ export class ClientLoginPage {
   async verifyLoginError(expectedText: string): Promise<void> {
     await expect(this.getToastMessage()).toBeVisible({ timeout: 10_000 });
     await expect(this.getToastMessage()).toContainText(expectedText);
-    comFunc.reportMessagePass(`ClientLoginPage.verifyLoginError() - Toast "${expectedText}" confirmed ✅`);
+    comFunc.reportMessagePass(
+      `ClientLoginPage.verifyLoginError() - Toast "${expectedText}" confirmed ✅`,
+    );
   }
 
   async verifyStillOnLoginPage(): Promise<void> {
     await expect(this.page()).toHaveURL(/auth\/login/, { timeout: 10_000 });
-    comFunc.reportMessagePass("ClientLoginPage.verifyStillOnLoginPage() - No navigation away confirmed ✅");
+    comFunc.reportMessagePass(
+      "ClientLoginPage.verifyStillOnLoginPage() - No navigation away confirmed ✅",
+    );
   }
 }
 
