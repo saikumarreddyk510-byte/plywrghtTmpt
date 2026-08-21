@@ -1,6 +1,6 @@
 ---
 name: detect-flaky
-description: Find tests that pass and fail without the code changing, using the run history in .test-history/runs.jsonl — hypothesises a cause (timing, ordering, shared state, data), proposes a targeted fix, and quarantines out of smoke only what it can justify. Use when the suite is "randomly" red, after triage-failure flags a flake candidate, or on a periodic health check.
+description: Find tests that pass and fail without the code changing, using the run history in .test-history/runs.jsonl — hypothesises a cause (timing, ordering, shared state, data), proposes a targeted fix, and quarantines out of smoke only what it can justify. Use when the suite is "randomly" red, after a red run turns up a flake candidate, or on a periodic health check.
 argument-hint: [spec file or test title to focus on — blank for the whole suite]
 disable-model-invocation: true
 ---
@@ -31,7 +31,7 @@ Verdicts it assigns:
 | Verdict | Meaning | Your job |
 |---|---|---|
 | `flaky` | Same code, outcome flips between runs | Diagnose and fix — this skill |
-| `consistently-failing` | Never passes | **Not flaky.** Hand to `/triage-failure` |
+| `consistently-failing` | Never passes | **Not flaky.** Treat it as a regression — read its trace in the Playwright HTML report |
 | `stable` | No flips | Leave it alone |
 | `insufficient-data` | Seen fewer than `--min-runs` times | Say so; do not guess |
 
@@ -102,8 +102,8 @@ non-determinism you found. Keep it under 15 lines.
 - **Never reach green by seeing less.** No `waitForTimeout`, no raised global
   timeout, no per-test retries, no weakened assertion. Every one of those makes
   the flake invisible rather than absent.
-- **`consistently-failing` is not flaky.** Route it to `/triage-failure`
-  unchanged.
+- **`consistently-failing` is not flaky.** It is a regression; report it
+  unchanged rather than quarantining it.
 - **App non-determinism is an app finding.** File it; do not absorb it into the
   suite as a "more tolerant" assertion.
 - **Every quarantine has a re-check date and an owner.** A quarantine without
@@ -121,8 +121,9 @@ non-determinism you found. Keep it under 15 lines.
 
 ## When *not* to use this skill
 
-- One run went red and you want to know why → `/triage-failure`; flakiness is a
-  claim about many runs, and this skill has nothing to read yet.
+- One run went red and you want to know why → read its trace and screenshot in
+  the Playwright HTML report; flakiness is a claim about many runs, and this
+  skill has nothing to read yet.
 - The history shows the test never passes → that is a regression, not a flake.
 - You want the whole suite run, diagnosed, and fixed in one pass → `/autopilot`,
   which calls this skill when it has the history to justify it.

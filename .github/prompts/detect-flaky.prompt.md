@@ -12,8 +12,8 @@ Copilot-specific mechanics:
 - Start from `npm run history:json -- --runs 30 --min-runs 3`. Do not re-derive
   the statistics by reading `.test-history/runs.jsonl` yourself — the script is
   deterministic, your judgement is needed for *why* a test flips.
-- A `consistently-failing` verdict is not flakiness; route it to
-  `.github/prompts/triage-failure.prompt.md` instead.
+- A `consistently-failing` verdict is not flakiness; it is a regression — read
+  the run's trace in the Playwright HTML report instead of quarantining it.
 
 Spec or test to focus on (blank = whole suite):
 ${input:task}

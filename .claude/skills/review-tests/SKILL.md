@@ -142,6 +142,7 @@ naming.
 
 - You want the findings *fixed* → `/generate-tests` (or `/ship-test`, which
   chains build and review and applies critical fixes once).
-- The spec is failing and you want to know why → `/triage-failure`; a review
-  reads code, it does not diagnose a red run.
+- The spec is failing and you want to know why → read the run's trace and
+  screenshot in the Playwright HTML report; a review reads code, it does not
+  diagnose a red run.
 - The spec fails on a locator only → `/heal-test`.

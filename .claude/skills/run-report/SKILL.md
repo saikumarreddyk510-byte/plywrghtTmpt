@@ -42,7 +42,7 @@ Change since last run: <+/- passes, new failures, fixed failures>
 
 ## What broke, in business terms
 - **<Business flow>** — <what a user would experience>. (TC-xxx, <spec file>)
-  Cause: <selector rot | test bug | app bug | flake>, per triage.
+  Cause: <selector rot | test bug | app bug | flake>.
 
 ## Fixed since last run
 - <flow> — was failing on <date>, passing now.
@@ -70,7 +70,7 @@ Change since last run: <+/- passes, new failures, fixed failures>
 - **No raw stack traces, no HTML, no attachments.** Link to the Allure report
   and the trace file for anyone who wants them.
 - **Under one screen.** If the failure list is long, group by business flow and
-  give a count; detail belongs in triage output, not here.
+  give a count; detail belongs in the HTML report, not here.
 
 ## Optional: post it
 If the user asks for it in a PR or a chat channel, keep exactly this structure —
@@ -89,8 +89,9 @@ tokens, customer data, or internal URLs that are not already public in the repo.
 
 ## When *not* to use this skill
 
-- You need to know *why* something failed → `/triage-failure`; this report
-  states what broke and who it affects, it does not root-cause.
+- You need to know *why* something failed → open the run's trace in the
+  Playwright HTML report; this report states what broke and who it affects, it
+  does not root-cause.
 - You want the failures fixed as well as reported → `/autopilot`, which ends by
   producing this report anyway.
 - No run has happened yet. Report on a real run, not an expected one.

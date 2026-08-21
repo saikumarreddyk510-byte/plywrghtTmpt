@@ -5,6 +5,7 @@ same conventions, same AI pipeline — read this before any chat request in this
 repo, the same way Claude Code auto-loads `CLAUDE.md`.
 
 ## Project Overview
+
 A reusable E2E test automation framework + AI authoring pipeline (Playwright +
 TypeScript). Not bound to any one target app — point `BASE_URL` at your app,
 fill in `.claude/skills/app-domain/SKILL.md`, and this repo is ready to
@@ -12,12 +13,14 @@ generate and run tests for it. Pattern: Page Object Model (POM) with Allure
 reporting.
 
 ## Tech Stack
+
 - Node.js v22 / TypeScript 5 (strict mode)
 - @playwright/test — test runner
 - allure-playwright — HTML reporting (requires Java)
 - cross-env — environment variable management
 
 ## Project Structure
+
 ```
 playwright/
   e2e/              ← UI specs (*.spec.ts, *.a11y.spec.ts)
@@ -44,11 +47,13 @@ playwright.config.ts ← projects: one per spec group, plus `api` and `a11y`
 ```
 
 Two naming rules keep this from drifting back into a pile:
+
 - `support/` holds **capabilities, one folder per concern** — a new capability is
   a new folder, never a loose file at the top of `support/`.
 - `support/data/` **generates** values; `playwright/testdata/` **stores** them.
 
 ## Conventions
+
 - Every spec imports `setPage` and calls it in `beforeEach`
 - All logging via `comFunc.reportMessageInfo/Pass/Fail/Error`
 - Test data always read from `playwright/testdata/*.json`
@@ -67,30 +72,29 @@ playwright-specs.instructions.md` when editing `playwright/e2e/**`, and
 ## The AI pipeline — same process, driven from Copilot Chat instead of Claude Code
 
 This repo's pipeline (scenario → strategy → implementation → review, plus
-self-healing and failure triage) is defined once, in `.claude/skills/*/SKILL.md`
+self-healing) is defined once, in `.claude/skills/*/SKILL.md`
 — that's the single source of truth, read by whichever tool is driving. The
 files under `.github/prompts/*.prompt.md` are thin pointers at those same
 definitions, invoked as `/name` in Copilot Chat (Agent mode) exactly like
 Claude Code's slash commands:
 
-| Prompt | Same as Claude Code skill | Use for |
-|---|---|---|
-| `/app-domain` | `app-domain` | View / update domain knowledge — app overview, flows, rules, selectors (read by every other skill) |
-| `/playwright-best-practices` | `playwright-best-practices` | Consult the full coding standard — locators, assertions, POM conventions, anti-patterns |
-| `/create-scenarios` | `create-scenarios` | Turn domain knowledge into TC-### scenarios |
-| `/test-strategy` | `test-strategy` | Assign scenarios to the right test layer |
-| `/generate-tests` | `generate-tests` | Write + verify + run + debug a spec, for real, in a browser |
-| `/review-tests` | `review-tests` | Checklist review against `playwright-best-practices` |
-| `/heal-test` | `heal-test` | Repair a locator that stopped matching after an app change |
-| `/triage-failure` | `triage-failure` | Diagnose why a run went red before touching anything |
-| `/ship-test` | `ship-test` | One scenario in, one passing spec out, end to end |
-| `/explore-app` | `explore-app` | Crawl the live app and draft `app-domain` + scenarios (proposes, never overwrites) |
-| `/generate-api-tests` | `generate-api-tests` | Write the API/Integration tier `test-strategy` assigns |
-| `/generate-testdata` | `generate-testdata` | Seeded realistic / boundary / adversarial data for the Security and Edge Case lenses |
-| `/detect-flaky` | `detect-flaky` | Separate genuinely flaky tests from consistently-failing ones, using run history |
-| `/run-report` | `run-report` | Plain-English digest of the last run for a non-engineer audience |
-| `/audit-a11y` | `audit-a11y` | Accessibility sweep, prioritised by real user impact and mapped to WCAG |
-| `/autopilot` | `autopilot` | Run → triage → fix what is safely fixable → re-run → report, in one prompt |
+| Prompt                       | Same as Claude Code skill   | Use for                                                                                            |
+| ---------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `/app-domain`                | `app-domain`                | View / update domain knowledge — app overview, flows, rules, selectors (read by every other skill) |
+| `/playwright-best-practices` | `playwright-best-practices` | Consult the full coding standard — locators, assertions, POM conventions, anti-patterns            |
+| `/create-scenarios`          | `create-scenarios`          | Turn domain knowledge into TC-### scenarios                                                        |
+| `/test-strategy`             | `test-strategy`             | Assign scenarios to the right test layer                                                           |
+| `/generate-tests`            | `generate-tests`            | Write + verify + run + debug a spec, for real, in a browser                                        |
+| `/review-tests`              | `review-tests`              | Checklist review against `playwright-best-practices`                                               |
+| `/heal-test`                 | `heal-test`                 | Repair a locator that stopped matching after an app change                                         |
+| `/ship-test`                 | `ship-test`                 | One scenario in, one passing spec out, end to end                                                  |
+| `/explore-app`               | `explore-app`               | Crawl the live app and draft `app-domain` + scenarios (proposes, never overwrites)                 |
+| `/generate-api-tests`        | `generate-api-tests`        | Write the API/Integration tier `test-strategy` assigns                                             |
+| `/generate-testdata`         | `generate-testdata`         | Seeded realistic / boundary / adversarial data for the Security and Edge Case lenses               |
+| `/detect-flaky`              | `detect-flaky`              | Separate genuinely flaky tests from consistently-failing ones, using run history                   |
+| `/run-report`                | `run-report`                | Plain-English digest of the last run for a non-engineer audience                                   |
+| `/audit-a11y`                | `audit-a11y`                | Accessibility sweep, prioritised by real user impact and mapped to WCAG                            |
+| `/autopilot`                 | `autopilot`                 | Run → classify → fix what is safely fixable → re-run → report, in one prompt                       |
 
 Real-browser verification (in `generate-tests`/`ship-test`/`heal-test`) uses
 the Playwright MCP server already registered in `.vscode/mcp.json` — the same
@@ -107,7 +111,9 @@ Copilot-parity layer specifically. Proposed-but-not-yet-built enhancements:
 `docs/roadmap.md`.
 
 ## Bootstrapping a New Project
+
 This repo is a template — no step below touches app-specific code until you do:
+
 1. Copy `.env.example` → `.env`, set `BASE_URL` (+ `APP_USER`/`APP_PASSWORD` if
    the app has a login).
 2. Fill in every section of `.claude/skills/app-domain/SKILL.md` — app overview,
@@ -128,6 +134,7 @@ This repo is a template — no step below touches app-specific code until you do
    Chat (Agent mode) and let the pipeline take it from there.
 
 ## Key Commands
+
 ```
 npm run pw:test             # Run all tests (headless)
 npm run pw:test:headed      # Run with visible browser

@@ -28,7 +28,7 @@ cheap.
   an API contract, or backend-only logic) → **stop here**, tell the user this
   belongs at Unit/API layer, not this pipeline. Don't force a UI test onto it.
 
-## Step 1 — Fast triage (inline, no subagent — this is the main token saver)
+## Step 1 — Fast classification (inline, no subagent — the main token saver)
 
 1. **Formalize, don't re-derive.** If the input isn't already a `TC-###` block,
    write one directly using the template in the `create-scenarios` skill and

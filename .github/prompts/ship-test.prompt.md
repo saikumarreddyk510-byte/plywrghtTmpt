@@ -4,7 +4,7 @@ description: One prompt in, one passing spec out — orchestrates scenario captu
 ---
 
 Follow the process in `.claude/skills/ship-test/SKILL.md` exactly — its five
-steps (resolve input → triage → build → review → fix-once → report). It is
+steps (resolve input → classify → build → review → fix-once → report). It is
 the single source of truth for this step — used by both the Claude Code and
 Copilot pipelines.
 

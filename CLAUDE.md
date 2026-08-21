@@ -1,6 +1,7 @@
 # PlayWrightAI — Playwright Test Automation
 
 ## Project Overview
+
 A reusable E2E test automation framework + AI authoring pipeline (Playwright +
 TypeScript + Claude Code). Not bound to any one target app — point `BASE_URL` at
 your app, fill in `.claude/skills/app-domain/SKILL.md`, and this repo is ready to
@@ -8,12 +9,14 @@ generate and run tests for it. Pattern: Page Object Model (POM) with Allure
 reporting.
 
 ## Tech Stack
+
 - Node.js v22 / TypeScript 5 (strict mode)
 - @playwright/test — test runner
 - allure-playwright — HTML reporting (requires Java)
 - cross-env — environment variable management
 
 ## Project Structure
+
 ```
 playwright/
   e2e/              ← UI specs (*.spec.ts, *.a11y.spec.ts)
@@ -40,11 +43,13 @@ playwright.config.ts ← projects: one per spec group, plus `api` and `a11y`
 ```
 
 Two naming rules keep this from drifting back into a pile:
+
 - `support/` holds **capabilities, one folder per concern** — a new capability is
   a new folder, never a loose file at the top of `support/`.
 - `support/data/` **generates** values; `playwright/testdata/` **stores** them.
 
 ## Key Commands
+
 ```
 npm run pw:test             # Run all tests (headless)
 npm run pw:test:headed      # Run with visible browser
@@ -62,6 +67,7 @@ npm run skills:validate     # Lint .claude/skills (frontmatter, dead refs)
 ```
 
 ## Conventions
+
 - Every spec imports `setPage` and calls it in `beforeEach`
 - All logging via `comFunc.reportMessageInfo/Pass/Fail/Error`
 - Test data always read from `playwright/testdata/*.json`
@@ -69,10 +75,11 @@ npm run skills:validate     # Lint .claude/skills (frontmatter, dead refs)
 - New spec → add matching project block in `playwright.config.ts`
 - Credentials in `.env` only — never hardcode in source
 - `fullyParallel: false` — one worker at a time (shared page handle)
-- `reportMessageFail` only *logs*; call `comFunc.assertNoSoftFailures()` (e.g.
+- `reportMessageFail` only _logs_; call `comFunc.assertNoSoftFailures()` (e.g.
   in `afterEach`) to turn accumulated soft failures into a real test failure
 
 ## Adding a New Test
+
 1. Add credentials/data to `playwright/testdata/users.json`
 2. Create Page Object in `playwright/support/pageObjects/*-po.ts`
 3. Create spec in `playwright/e2e/*.spec.ts`
@@ -80,6 +87,7 @@ npm run skills:validate     # Lint .claude/skills (frontmatter, dead refs)
 5. Run: `npx playwright test <spec>.spec.ts --headed --project=<name>`
 
 ## AI Authoring Pipeline (Claude Code)
+
 `.claude/skills/README.md` is the catalog and the invariants every skill
 inherits; `.claude/skills/TEMPLATE.md` is the scaffold and standard for
 writing a new one. `npm run skills:validate` enforces both, and runs in CI as
@@ -94,7 +102,7 @@ files — see `.github/copilot-instructions.md` and `docs/architecture.md` §12.
 - **One-shot (authoring)**: `/ship-test <scenario>` (or just paste a scenario) —
   orchestrates everything below through isolated subagents, end to end.
 - **One-shot (maintenance)**: `/autopilot [smoke|regression|spec]` — runs the
-  suite, triages what went red, heals selector rot, fixes test bugs, re-runs to
+  suite, classifies what went red, heals selector rot, fixes test bugs, re-runs to
   prove it, and writes `docs/reports/run-report.md`. Hard limits keep it honest: one
   fix-and-re-run cycle, never reaches green by weakening a test, files app bugs
   to `docs/reports/app-bugs.md` instead of absorbing them, never commits. See
@@ -123,17 +131,21 @@ files — see `.github/copilot-instructions.md` and `docs/architecture.md` §12.
   `heal-test` skill and `playwright-best-practices` §9. `generate-tests`'
   debug loop calls it automatically for locator-class failures. Applied fixes
   are logged to `docs/reports/healing-log.md`; ambiguous ones are never auto-applied.
-- **Failure triage**: `/triage-failure [spec]` reads a red run's trace,
-  screenshots, and logs and classifies it — selector rot (→ `heal-test`), test
-  bug (→ `generate-tests`), app bug/regression (filed, test left untouched),
-  or environment flake (flagged, not silently "fixed"). Wired into CI (below).
-- **CI**: `.github/workflows/playwright.yml` — smoke on every PR, full
-  regression nightly. On failure, `triage-baseline` posts the raw evidence
-  with **no AI vendor required**; `review`/`triage` are optional AI
-  enrichment on top of that, gated on `ANTHROPIC_API_KEY` as a repo secret
-  (skipped cleanly if it's not set). Details: `docs/architecture.md` §11.
+- **CI**: `.github/workflows/playwright.yml` — full suite on every push,
+  smoke on every PR, smoke daily at 03:00 UTC. `.githooks/` run the same
+  format/lint/typecheck locally before a push leaves the machine. Every run
+  uploads its HTML reports as artifacts, so a red run is diagnosable from the
+  trace alone. `review` is optional AI enrichment, gated on `ANTHROPIC_API_KEY`
+  as a repo secret (skipped cleanly if it's not set).
+- **CD**: `.github/workflows/e2e-gate.yml` — the CD-facing half. An app's
+  release pipeline calls it (`workflow_call`, or `repository_dispatch` from a
+  non-Actions deploy system) to use this suite as a **promotion gate**, with
+  per-environment secrets from GitHub Environments. `playwright.yml` also has
+  an opt-in `publish-report` job that deploys the HTML report to Pages.
+  Full write-up: `docs/cicd.md`; design notes: `docs/architecture.md` §11.
 
 ## Where This Could Go Next
+
 `docs/roadmap.md` — Tiers 1 and 2 are complete and Tier 3 is all but done. What
 is left: visual regression with AI-judged diffs (needs baseline image storage),
 unit generation (deliberately out of scope — it belongs in the app repo), and
@@ -141,7 +153,9 @@ parallel-safe execution (blocked by the shared `globalVariables.page` handle,
 which is a breaking refactor of every Page Object).
 
 ## Bootstrapping a New Project
+
 This repo is a template — no step below touches app-specific code until you do:
+
 1. Copy `.env.example` → `.env`, set `BASE_URL` (+ `APP_USER`/`APP_PASSWORD` if
    the app has a login).
 2. Fill in every section of `.claude/skills/app-domain/SKILL.md` — app overview,

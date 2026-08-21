@@ -38,12 +38,11 @@ until it is filled in.
 
 | Skill | In → Out |
 |---|---|
-| `/triage-failure` | A red run → each failure classified: selector rot, test bug, app bug, or flake candidate |
 | `/heal-test` | Selector rot → relocated locators, logged to `docs/reports/healing-log.md`. Never applies at low confidence |
 | `/detect-flaky` | `.test-history/runs.jsonl` → genuine flakes separated from consistent failures, with a fix or a receipted quarantine |
 | `/run-report` | Last run → `docs/reports/run-report.md`, in business language, for people who will never open Allure |
 | `/audit-a11y` | Real pages → WCAG-mapped findings ranked by user impact, with the gaps stated |
-| **`/autopilot`** | **Run → triage → fix → prove → report**, in one prompt, under hard limits |
+| **`/autopilot`** | **Run → classify → fix → prove → report**, in one prompt, under hard limits |
 
 ## Two entry points
 

@@ -11,7 +11,6 @@ import { runId, timestamp } from "./allureRunContext";
  * single run's snapshot:
  *   - `/detect-flaky`  — same test, same code, different outcome across runs
  *   - `/run-report`    — what changed since the last run, trend over time
- *   - `/triage-failure`— "has this failed before, and how?" before guessing
  *
  * Format is JSON Lines (one self-contained object per line) on purpose:
  * append-only, never rewritten, safe to `tail`, and mergeable with
@@ -21,7 +20,7 @@ import { runId, timestamp } from "./allureRunContext";
 export const historyDir = ".test-history";
 export const historyFile = path.join(historyDir, "runs.jsonl");
 
-/** Coarse failure class — the same buckets `/triage-failure` routes on. */
+/** Coarse failure class — the buckets failure diagnosis routes on. */
 export type FailureClass =
   "locator" | "assertion" | "navigation" | "network" | "timeout" | "setup" | "unknown";
 
@@ -45,7 +44,7 @@ export interface TestHistoryRecord {
 }
 
 /**
- * Buckets an error message into the class `/triage-failure` and `/heal-test`
+ * Buckets an error message into the class `/heal-test` and `/detect-flaky`
  * route on. Deterministic and cheap — the AI skills refine it, they don't
  * have to derive it from scratch.
  */

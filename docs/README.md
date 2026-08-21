@@ -6,23 +6,24 @@ questions and the folder falls out.
 
 ## Read these first (written by humans, for humans)
 
-| File | What it is |
-|---|---|
-| [quickstart.md](quickstart.md) | Scenario → passing test, step by step. Start here. |
+| File                               | What it is                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [quickstart.md](quickstart.md)     | Scenario → passing test, step by step. Start here.                                                            |
 | [architecture.md](architecture.md) | How the AI pipeline is designed and why. [architecture.html](architecture.html) is the diagram-first version. |
-| [roadmap.md](roadmap.md) | What is built, what is left, and what is deliberately out of scope. |
+| [cicd.md](cicd.md)                 | How CI and CD are split, how to use the suite as a release gate, and how environments/secrets are wired.      |
+| [roadmap.md](roadmap.md)           | What is built, what is left, and what is deliberately out of scope.                                           |
 
 ## `pipeline/` — working files (written by skills, read by skills)
 
 These are **inputs to the next AI step**, not reports. Each one is the handoff
 between two stages of the pipeline.
 
-| File | Written by | Read by |
-|---|---|---|
-| `test-scenarios.md` | `/create-scenarios`, `/explore-app` | `/test-strategy`, `/ship-test`, `/generate-testdata` |
-| `test-strategy.md` | `/test-strategy` | `/generate-tests`, `/generate-api-tests` |
-| `domain-draft.md` | `/explore-app` | a human, who merges it into the `app-domain` skill |
-| `exploration-findings.md` | `/explore-app` | a human (app findings, not test work) |
+| File                      | Written by                          | Read by                                              |
+| ------------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `test-scenarios.md`       | `/create-scenarios`, `/explore-app` | `/test-strategy`, `/ship-test`, `/generate-testdata` |
+| `test-strategy.md`        | `/test-strategy`                    | `/generate-tests`, `/generate-api-tests`             |
+| `domain-draft.md`         | `/explore-app`                      | a human, who merges it into the `app-domain` skill   |
+| `exploration-findings.md` | `/explore-app`                      | a human (app findings, not test work)                |
 
 `domain-draft.md` is a proposal, never applied automatically. `app-domain` is the
 oracle every other skill trusts, so a wrong line in it silently corrupts
@@ -30,14 +31,14 @@ everything downstream — a human confirms it.
 
 ## `reports/` — generated output (written by skills, read by people)
 
-| File | Written by | Audience |
-|---|---|---|
-| `run-report.md` | `/run-report`, `/autopilot` | Anyone who needs to know if the release is safe |
-| `review-report.md` | `/review-tests` | Whoever is about to merge the spec |
-| `healing-log.md` | `/heal-test` | Whoever needs to audit what a locator fix changed |
-| `flaky-log.md` | `/detect-flaky` | Whoever owns the quarantine and its re-check date |
-| `app-bugs.md` | `/autopilot`, `/triage-failure`, the generators | The app team |
-| `a11y/*.json` | the `a11y` test project | `/audit-a11y`, which turns them into `a11y-report.md` |
+| File               | Written by                   | Audience                                              |
+| ------------------ | ---------------------------- | ----------------------------------------------------- |
+| `run-report.md`    | `/run-report`, `/autopilot`  | Anyone who needs to know if the release is safe       |
+| `review-report.md` | `/review-tests`              | Whoever is about to merge the spec                    |
+| `healing-log.md`   | `/heal-test`                 | Whoever needs to audit what a locator fix changed     |
+| `flaky-log.md`     | `/detect-flaky`              | Whoever owns the quarantine and its re-check date     |
+| `app-bugs.md`      | `/autopilot`, the generators | The app team                                          |
+| `a11y/*.json`      | the `a11y` test project      | `/audit-a11y`, which turns them into `a11y-report.md` |
 
 Nothing in here is a source of truth for the pipeline — deleting a report loses
 history, not correctness.
@@ -47,10 +48,10 @@ history, not correctness.
 Not part of the framework. Kept out of the folders above so a reader can tell
 "how this repo works" from "notes someone took while learning it".
 
-| File | What it is |
-|---|---|
+| File                                                        | What it is                                                                                                |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | [project-guide-telugu.md](learning/project-guide-telugu.md) | What this project can do, what "100% AI-driven" actually means, and every command — in Telugu-English mix |
-| [learningExplaination.md](learning/learningExplaination.md) | Notes on AI agents, MCP, and Claude Code concepts |
+| [learningExplaination.md](learning/learningExplaination.md) | Notes on AI agents, MCP, and Claude Code concepts                                                         |
 
 ---
 

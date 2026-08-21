@@ -137,8 +137,10 @@ Report:
 ## When *not* to use this skill
 
 - The element was found and the assertion disagreed → that is a behaviour
-  difference, not selector rot. Use `/triage-failure` to classify it.
+  difference, not selector rot. Check it against `app-domain`: if the app now
+  contradicts the documented rule it is an app bug, otherwise the test is stale.
 - The page never loaded or the URL is wrong → investigate the flow or the
   environment, not a selector.
-- You do not yet know which class of failure you have → `/triage-failure`
-  first; it routes back here if the answer is selector rot.
+- You do not yet know which class of failure you have → read the trace and
+  screenshot in the Playwright HTML report first; come back here only once the
+  answer is selector rot.

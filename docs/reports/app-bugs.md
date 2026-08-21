@@ -1,7 +1,7 @@
 # App Bugs Found by the Test Pipeline
 
-Written by `/autopilot`, `/triage-failure`, `/generate-api-tests`, and
-`/generate-testdata` when the **application** contradicts documented behaviour.
+Written by `/autopilot`, `/generate-api-tests`, and `/generate-testdata` when
+the **application** contradicts documented behaviour.
 
 The rule that makes this file worth reading: a bug listed here has **not** been
 worked around in the test suite. The test stays as written and stays red, so
@@ -11,6 +11,7 @@ test is how a suite quietly stops testing the thing it was written for.
 ## Template
 
 ### BUG-<NNN>: <one-line summary>
+
 - **Found by**: `<skill>` on `<date>`
 - **Expected** (per `app-domain` §<section>): <documented behaviour>
 - **Observed**: <what the app actually did>
