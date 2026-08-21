@@ -23,3 +23,36 @@ LogFolder/
 
 # Build artifacts
 dist/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Compiled source maps
+*.js.map
+
+# Generated test-run history (runtime data produced by history:analyze script)
+.test-history/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Generated architecture/pipeline diagrams
+docs/architecture.html
+
+# Learning / explanation content — no functional value to the project
+docs/learning/
+
+# Generated a11y scan output (raw JSON produced by npm run pw:test:a11y)
+# The README.md in this folder is kept; only scan output files are ignored
+docs/reports/a11y/*.json
+
+# IDE files
+.idea/
