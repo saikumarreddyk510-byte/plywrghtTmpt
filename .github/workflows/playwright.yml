@@ -258,6 +258,51 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # ── CD: deploy the one artifact this repo actually produces ──────────────
+  # CI answers "is the code good". This is the other half: it takes the build
+  # output and puts it somewhere people can reach, at a stable URL, without
+  # downloading a zip from the Actions tab.
+  #
+  # OFF by default, deliberately. A template that publishes to the internet the
+  # moment someone clones it is a trap — reports carry test names, target URLs
+  # and failure screenshots. Two steps to turn it on:
+  #   1. Settings → Pages → Source: "GitHub Actions"
+  #   2. Settings → Secrets and variables → Actions → Variables:
+  #      PUBLISH_REPORT = true
+  # `vars` (unlike `secrets`) IS a legal context in a job-level `if:`.
+  publish-report:
+    name: Publish HTML report to Pages
+    needs: test
+    if: always() && vars.PUBLISH_REPORT == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # A real deployment environment, with the deployed URL surfaced on the run.
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    # Pages allows one deployment at a time, and a half-finished deploy should
+    # never be cancelled — hence cancel-in-progress: false, unlike the CI jobs.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: playwright-html-report-${{ github.run_number }}
+          path: report
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: report
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
   # ── Tier 0: deterministic failure signal, no AI vendor required ──────────
   triage-baseline:
     name: Post failure evidence (no AI required)

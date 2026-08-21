@@ -1,0 +1,182 @@
+# E2E Gate — the CD-facing entry point to this suite.
+#
+# playwright.yml is CI: it protects THIS repo (does the code lint, compile and
+# pass its tests). This file is the other half: it lets an application's CD
+# pipeline use the suite as a PROMOTION GATE — "staging is deployed, prove it
+# works before production."
+#
+# That is the shape a test framework takes in a real CI/CD setup. A test repo
+# almost never has a deploy pipeline of its own; it becomes a required step
+# inside the pipeline of the thing it tests:
+#
+#   app repo:  build → deploy to staging → [ this workflow ] → promote to prod
+#                                                  ↑ decides
+#
+# ── Three ways in, one code path ─────────────────────────────────────────────
+#   workflow_call        the app repo's pipeline calls this directly. Preferred:
+#                        the caller BLOCKS on the result, which is what makes it
+#                        a gate rather than a notification.
+#   repository_dispatch  a deploy system with no GitHub Actions of its own (Jenkins,
+#                        Octopus, a shell script) POSTs to the GitHub API.
+#                        Fire-and-forget: it cannot block on the result.
+#   workflow_dispatch    a human, from the Actions tab.
+#
+# ── What you must set up before this runs ────────────────────────────────────
+# Create one GitHub Environment per target (Settings → Environments), e.g.
+# `qa`, `staging`, `production`. Give EACH its own secrets:
+#     BASE_URL, APP_USER, APP_PASSWORD
+# Environment-scoped secrets are the point: the same workflow tests whichever
+# target it is handed, and production credentials never leak into a qa run.
+# Environments also carry protection rules — require an approval before this
+# suite is allowed to touch production, if that is your policy.
+
+name: E2E Gate
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "GitHub Environment to test against (qa | staging | production)"
+        required: true
+        type: string
+      suite:
+        description: "smoke (fast gate) or full (complete regression)"
+        required: false
+        default: smoke
+        type: string
+    outputs:
+      result:
+        description: "success | failure — gate this on the caller side to block promotion"
+        value: ${{ jobs.e2e.outputs.result }}
+    secrets:
+      # Optional. If the caller is in THIS repo, leave these out and let the
+      # job's `environment:` supply them. Cross-repo callers must pass them
+      # explicitly (or use `secrets: inherit`), because environment secrets do
+      # not travel across repositories.
+      BASE_URL:
+        required: false
+      APP_USER:
+        required: false
+      APP_PASSWORD:
+        required: false
+
+  repository_dispatch:
+    # curl -X POST -H "Authorization: Bearer $TOKEN" \
+    #   https://api.github.com/repos/<owner>/<repo>/dispatches \
+    #   -d '{"event_type":"deployed","client_payload":{"environment":"staging","suite":"smoke"}}'
+    types: [deployed]
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: environment # renders a dropdown of the environments you created
+      suite:
+        description: "Which suite"
+        required: true
+        default: smoke
+        type: choice
+        options: [smoke, full]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One gate run per environment. A second deploy to staging supersedes the
+  # in-flight check of the version it just replaced — that result is now stale.
+  group: e2e-gate-${{ github.event.inputs.environment || github.event.client_payload.environment || inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  # The three triggers deliver their arguments in three different places.
+  # Normalise once here so the job below never has to care which fired.
+  resolve:
+    name: Resolve target
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.r.outputs.environment }}
+      suite: ${{ steps.r.outputs.suite }}
+    steps:
+      - id: r
+        shell: bash
+        run: |
+          ENVIRONMENT="${{ inputs.environment || github.event.client_payload.environment }}"
+          SUITE="${{ inputs.suite || github.event.client_payload.suite }}"
+
+          # Fail loudly rather than silently testing the wrong target: a gate
+          # that defaults to qa when the caller meant production is worse than
+          # no gate at all.
+          if [ -z "$ENVIRONMENT" ]; then
+            echo "::error::No environment supplied. Pass 'environment' as a workflow input, or as client_payload.environment on repository_dispatch."
+            exit 1
+          fi
+          if [ -z "$SUITE" ]; then SUITE=smoke; fi
+
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+          echo "suite=$SUITE" >> "$GITHUB_OUTPUT"
+          echo "### E2E Gate: \`$SUITE\` suite against \`$ENVIRONMENT\`" >> "$GITHUB_STEP_SUMMARY"
+
+  e2e:
+    name: E2E against ${{ needs.resolve.outputs.environment }}
+    needs: resolve
+    runs-on: windows-latest # matches playwright.yml — see the note there
+    # THIS is the line that makes the workflow environment-aware: BASE_URL and
+    # the credentials below resolve to whichever environment was requested.
+    environment: ${{ needs.resolve.outputs.environment }}
+    outputs:
+      result: ${{ steps.outcome.outputs.result }}
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+      APP_USER: ${{ secrets.APP_USER }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      PW_SPEC_NAME: gate-${{ needs.resolve.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chrome
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Run suite
+        id: run
+        continue-on-error: true # let the report upload before the job goes red
+        shell: bash
+        run: |
+          if [ "${{ needs.resolve.outputs.suite }}" = "full" ]; then
+            npm run pw:test
+          else
+            npm run pw:test:smoke
+          fi
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-gate-${{ needs.resolve.outputs.environment }}-${{ github.run_number }}
+          path: playwright-report/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Convert the tolerated step failure back into a real job result, so a
+      # caller gating on `result` gets the truth.
+      - name: Publish outcome
+        id: outcome
+        shell: bash
+        run: |
+          RESULT="${{ steps.run.outcome }}"
+          echo "result=$RESULT" >> "$GITHUB_OUTPUT"
+          echo "Gate result against \`${{ needs.resolve.outputs.environment }}\`: **$RESULT**" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$RESULT" != "success" ]; then
+            echo "::error::E2E gate FAILED against ${{ needs.resolve.outputs.environment }} — do not promote."
+            exit 1
+          fi
