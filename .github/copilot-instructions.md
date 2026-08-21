@@ -75,6 +75,8 @@ Claude Code's slash commands:
 
 | Prompt | Same as Claude Code skill | Use for |
 |---|---|---|
+| `/app-domain` | `app-domain` | View / update domain knowledge — app overview, flows, rules, selectors (read by every other skill) |
+| `/playwright-best-practices` | `playwright-best-practices` | Consult the full coding standard — locators, assertions, POM conventions, anti-patterns |
 | `/create-scenarios` | `create-scenarios` | Turn domain knowledge into TC-### scenarios |
 | `/test-strategy` | `test-strategy` | Assign scenarios to the right test layer |
 | `/generate-tests` | `generate-tests` | Write + verify + run + debug a spec, for real, in a browser |
