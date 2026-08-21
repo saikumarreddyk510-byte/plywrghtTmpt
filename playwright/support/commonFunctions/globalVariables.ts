@@ -45,7 +45,7 @@ export const globalVariables = {
   },
 
   // ─── Runtime data (per-test transient state) ──────────────────────────────
-  runtimeData: {} as any,
+  runtimeData: {} as Record<string, unknown>,
 };
 
 /**

@@ -1,3 +1,9 @@
 # Run history is append-only — union-merge instead of conflicting on every
 # branch that happens to have run the suite.
 .test-history/runs.jsonl merge=union
+
+# Shell hooks must keep LF line endings. With core.autocrlf=true (the default
+# on Windows) git would check these out as CRLF, and a CRLF shebang makes the
+# kernel look for an interpreter literally named "/bin/sh\r" — the hooks then
+# fail with "bad interpreter" on any macOS/Linux clone.
+.githooks/** text eol=lf

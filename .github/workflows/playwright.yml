@@ -4,6 +4,20 @@
 #   - `test`             — deterministic. Always runs, no AI vendor needed.
 #                           Runs the framework exactly as `npm run
 #                           pw:test[:smoke]` would locally.
+#
+# When it runs (see the `on:` block and the "Select suite" step):
+#   push (any branch)   -> FULL suite. The point of the push trigger: the code
+#                          you just pushed is exercised together with every test
+#                          already in the repo, so a new spec can't pass in
+#                          isolation while quietly breaking an existing one.
+#   pull_request -> main -> smoke only. Fast gate; the merge push then runs full.
+#   schedule (03:00 UTC) -> smoke only. The daily health check against the live
+#                          app, catching app-side drift on days nobody pushed.
+#   workflow_dispatch    -> operator picks full or smoke from the Run workflow
+#                          dropdown.
+#
+# Every run uploads its HTML reports as workflow artifacts - see "Reports"
+# in the `test` job.
 #   - `triage-baseline`   — deterministic. Runs whenever `test` fails, no AI
 #                           vendor needed. Posts the raw evidence (failing
 #                           test names, an error excerpt, links to the
@@ -51,11 +65,26 @@
 name: Playwright Tests
 
 on:
+  push:
+    branches: ["**"] # every push, any branch: run the new code AND the existing suite
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 3 * * *" # nightly full regression, 03:00 UTC
-  workflow_dispatch: {}
+    - cron: "0 3 * * *" # daily smoke run, 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "Which suite to run"
+        type: choice
+        default: full
+        options: [full, smoke]
+
+# A newer push to the same branch supersedes the run already in flight, so a
+# burst of commits costs one run instead of five. Scheduled runs sit in their
+# own group: the daily smoke must never be cancelled by someone pushing.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'schedule' && 'daily-smoke' || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 jobs:
   # ── Tier 0: the skills themselves are lint-able artifacts ────────────────
@@ -71,6 +100,48 @@ jobs:
         with:
           node-version: 22
       - run: npm run skills:validate
+
+  # ── Tier 0: code quality ─────────────────────────────────────────────────
+  # The .githooks/pre-push hook runs exactly these two commands locally, so this
+  # job is normally a no-op. It exists because a hook is advisory — anyone can
+  # `git push --no-verify`, and a fresh clone only gets the hooks once someone
+  # runs `npm install`. This is the copy that actually enforces the standard.
+  quality:
+    name: Lint + format + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: ESLint (prettier formatting rules run inside it)
+        run: npm run lint
+      - name: TypeScript
+        run: npm run typecheck
+
+  # GitHub does not expose the `secrets` context to a job-level `if:` - only
+  # github/needs/vars/inputs. Referencing it there ("Unrecognized named-value:
+  # 'secrets'") makes the ENTIRE workflow file fail to parse, taking the test
+  # jobs down with it. Resolve the key once here, where `env` is legal, and gate
+  # the optional AI jobs on this output instead.
+  config:
+    name: Resolve optional AI config
+    runs-on: ubuntu-latest
+    outputs:
+      has_ai: ${{ steps.check.outputs.has_ai }}
+    steps:
+      - id: check
+        shell: bash
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "has_ai=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_ai=false" >> "$GITHUB_OUTPUT"
+          fi
 
   test:
     name: Run Playwright tests
@@ -92,15 +163,66 @@ jobs:
 
       - run: npx playwright install chrome
 
-      - name: Smoke tests (pull request)
-        if: github.event_name == 'pull_request'
+      # globalTeardown skips Allure HTML generation entirely when `java` is
+      # missing (see globalTeardown.ts) - which would leave the report artifact
+      # empty. Pinning a JDK here is what makes the HTML report reliable.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # One place decides which suite runs, so the mapping stays readable:
+      #   push              -> full   (the pushed code plus everything already there)
+      #   pull_request      -> smoke  (fast gate; merging to main then runs full)
+      #   schedule          -> smoke  (the daily smoke run)
+      #   workflow_dispatch -> whatever the operator picked (default: full)
+      - name: Select suite
+        id: suite
+        shell: bash
+        run: |
+          case "${{ github.event_name }}" in
+            pull_request|schedule) SUITE=smoke ;;
+            workflow_dispatch)     SUITE="${{ inputs.suite }}" ;;
+            *)                     SUITE=full ;;
+          esac
+          # A blank value here would match neither run step below, and the job
+          # would report success having executed nothing. Fail closed to full.
+          if [ -z "$SUITE" ]; then SUITE=full; fi
+          echo "name=$SUITE" >> "$GITHUB_OUTPUT"
+          echo "### Playwright: \`$SUITE\` suite (${{ github.event_name }})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke suite
+        if: steps.suite.outputs.name == 'smoke'
         run: npm run pw:test:smoke
 
-      - name: Full regression (scheduled / manual)
-        if: github.event_name != 'pull_request'
+      - name: Full suite
+        if: steps.suite.outputs.name == 'full'
         run: npm run pw:test
 
-      - name: Upload Allure results + report
+      # ── Reports ───────────────────────────────────────────────────────────
+      # Three artifacts rather than one bundle, because they answer different
+      # questions: the Playwright HTML report is the one to open first (it needs
+      # no Java and embeds traces), Allure is the richer project-standard
+      # report, and the raw results are what the triage jobs below parse.
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report-${{ github.run_number }}
+          path: playwright-report/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-html-report-${{ github.run_number }}
+          path: C:/LogFolder/*/allure-report/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure raw results + run logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -224,8 +346,8 @@ jobs:
   # ── Tier 1: optional AI enrichment of what Tier 0 already posted ─────────
   review:
     name: AI review of changed specs
-    needs: test
-    if: always() && github.event_name == 'pull_request' && secrets.ANTHROPIC_API_KEY != ''
+    needs: [test, config]
+    if: always() && github.event_name == 'pull_request' && needs.config.outputs.has_ai == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -275,8 +397,8 @@ jobs:
 
   triage:
     name: AI triage on failure (enrichment)
-    needs: [test, triage-baseline]
-    if: failure() && secrets.ANTHROPIC_API_KEY != ''
+    needs: [test, triage-baseline, config]
+    if: failure() && needs.config.outputs.has_ai == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

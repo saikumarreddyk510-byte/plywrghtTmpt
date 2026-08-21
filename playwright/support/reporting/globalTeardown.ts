@@ -63,7 +63,10 @@ async function globalTeardown(): Promise<void> {
       execSync("java -version", { stdio: "ignore" });
       javaAvailable = true;
     } catch {
-      console.log("Java not found — skipping Allure HTML report generation. Test results saved to: " + destinationFolder);
+      console.log(
+        "Java not found — skipping Allure HTML report generation. Test results saved to: " +
+          destinationFolder,
+      );
     }
 
     if (javaAvailable) {

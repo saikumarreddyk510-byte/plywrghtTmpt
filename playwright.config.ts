@@ -31,6 +31,11 @@ export default defineConfig({
   fullyParallel: false,
   reporter: [
     ["list"],
+    // Self-contained HTML report at playwright-report/ — no Java, no external
+    // tooling, traces embedded. This is the artifact CI uploads and the one to
+    // open first; Allure below stays the richer project-standard report.
+    // open: "never" so a local failing run never hijacks a browser window.
+    ["html", { outputFolder: "playwright-report", open: "never" }],
     ["allure-playwright", { resultsDir: allureResultsDir }],
     ["./playwright/support/reporting/logFileReporter.ts"],
     ["./playwright/support/reporting/runHistoryReporter.ts"],
