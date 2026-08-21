@@ -4,7 +4,9 @@ import type { Page } from "@playwright/test";
  * Single canonical base URL for the test environment.
  * Override at runtime via the BASE_URL environment variable.
  */
-export const BASE_URL = process.env.BASE_URL ?? "https://your-app.example.com";
+// `||` not `??`: an unset CI secret is an empty string, and "" is a valid
+// value to `??` but a useless base URL.
+export const BASE_URL = process.env.BASE_URL || "https://your-app.example.com";
 
 /**
  * Shared Playwright Page handle.

@@ -64,6 +64,12 @@
 
 name: Playwright Tests
 
+# GITHUB_TOKEN defaults to read-only on repos created since 2023, which made
+# triage-baseline's issues.create() return 403 and fail the job. Default to
+# read-only here and widen only the one job that actually writes.
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["**"] # every push, any branch: run the new code AND the existing suite
@@ -258,6 +264,10 @@ jobs:
     needs: test
     if: failure()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # files/updates the "[CI] Nightly ... failing" tracking issue
+      pull-requests: write # posts the evidence comment on a PR
     outputs:
       issue_number: ${{ steps.post.outputs.issue_number }}
     steps:
@@ -349,6 +359,9 @@ jobs:
     needs: [test, config]
     if: always() && github.event_name == 'pull_request' && needs.config.outputs.has_ai == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -400,6 +413,10 @@ jobs:
     needs: [test, triage-baseline, config]
     if: failure() && needs.config.outputs.has_ai == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 

@@ -41,7 +41,10 @@ export default defineConfig({
     ["./playwright/support/reporting/runHistoryReporter.ts"],
   ],
   use: {
-    baseURL: process.env.BASE_URL ?? "https://your-app.example.com",
+    // NOTE: `||`, not `??`. An unset GitHub Actions secret arrives as an empty
+    // string, which `??` would happily pass through as baseURL: "" — making
+    // every relative goto("/") fail with "Invalid URL" in CI.
+    baseURL: process.env.BASE_URL || "https://your-app.example.com",
     viewport: { width: 1920, height: 1080 },
     actionTimeout: 10_000,
     navigationTimeout: 120_000,
