@@ -1,0 +1,15 @@
+{
+  // Turns on discovery of .github/prompts/*.prompt.md, which is how the
+  // pipeline is invoked from Copilot Chat: /ship-test, /autopilot,
+  // /generate-tests and the rest. On builds where prompt files are already
+  // generally available this is a no-op; on builds where discovery is still
+  // opt-in, without it none of those commands appear in the / menu.
+  "chat.promptFiles": true,
+
+  // Makes Copilot Chat read .github/copilot-instructions.md on every request
+  // in this repo — the Copilot-native counterpart to CLAUDE.md. It carries the
+  // project conventions (setPage in beforeEach, comFunc logging, testdata over
+  // literals) and the table mapping each /prompt to the skill it points at.
+  // Without this, Copilot answers here with no knowledge of any of that.
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true
+}
